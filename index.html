@@ -1,848 +1,448 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Recipe Generator — Offline</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Recipe Generator - Manik Roy 2025</title>
 <style>
-  :root{--accent:#ff7043;--bg:#f7f7f8;--card:#fff;--muted:#6b7280}
-  *{box-sizing:border-box}
-  body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);margin:0;color:#111;line-height:1.4}
-  header{background:var(--accent);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-  header h1{margin:0;font-size:18px}
-  .actions{display:flex;gap:8px;align-items:center}
-  main{max-width:1100px;margin:18px auto;padding:12px}
-  .grid{display:grid;grid-template-columns:1fr 420px;gap:16px}
-  @media(max-width:980px){.grid{grid-template-columns:1fr}}
-  .card{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
-  label{font-size:13px;color:var(--muted);display:block;margin-top:8px}
-  input,textarea,select,button{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.06);font-size:14px}
-  textarea{min-height:90px;resize:vertical}
-  button{background:var(--accent);color:#fff;border:none;cursor:pointer}
-  .small-btn{background:#fff;color:var(--accent);border:1px solid rgba(0,0,0,0.06);padding:8px;border-radius:8px;cursor:pointer}
-  .muted{color:var(--muted);font-size:13px}
-  .recipe-card{border:1px solid rgba(0,0,0,0.06);padding:10px;border-radius:8px;margin-bottom:8px}
-  .flex{display:flex;gap:8px;align-items:center}
-  .hidden{display:none}
-  .shopping-item{display:flex;align-items:center;gap:8px;padding:6px 0}
-  .nutrition-line{font-size:13px;color:#333;margin-top:6px}
-  .step-nut{font-size:13px;color:var(--muted)}
-  .print-only{display:none}
-  .small-input{width:110px;padding:8px;border-radius:6px}
-  .inline-edit{display:flex;gap:6px;align-items:center}
-  .inline-edit input{width:80px;padding:6px}
-  .unit-select{width:110px;padding:6px}
-  footer.app-footer{text-align:center;margin-top:20px;color:var(--muted);font-size:13px}
-  @media print{body *{visibility:hidden} .print-only, .print-only *{visibility:visible} .print-only{position:fixed;left:0;top:0;width:100%}}
+  :root {
+    --color-bg-light: #fafafa;
+    --color-text-light: #222;
+    --color-bg-dark: #121212;
+    --color-text-dark: #eee;
+    --color-primary: #4CAF50;
+    --color-accent: #ff9800;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-bg-light);
+    color: var(--color-text-light);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    transition: background-color 0.3s, color 0.3s;
+  }
+  body.dark {
+    background-color: var(--color-bg-dark);
+    color: var(--color-text-dark);
+  }
+
+  main {
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+  }
+
+  h1 {
+    margin-bottom: 0.2em;
+  }
+
+  label {
+    display: block;
+    margin: 1em 0 0.3em;
+    font-weight: 600;
+  }
+
+  input[type="text"] {
+    width: 80%;
+    max-width: 400px;
+    padding: 0.5em;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    outline-offset: 2px;
+  }
+  body.dark input[type="text"] {
+    background-color: #333;
+    border: 1px solid #555;
+    color: var(--color-text-dark);
+  }
+
+  button {
+    margin: 1em 0.3em;
+    padding: 0.6em 1.2em;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background-color: var(--color-primary);
+    color: white;
+    transition: background-color 0.3s;
+  }
+  button:hover, button:focus {
+    background-color: #388e3c;
+    outline: none;
+  }
+
+  button.secondary {
+    background-color: var(--color-accent);
+  }
+  button.secondary:hover, button.secondary:focus {
+    background-color: #f57c00;
+  }
+
+  .recipe-list, .favorites-list {
+    margin-top: 1em;
+    text-align: left;
+  }
+
+  .recipe-item {
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-bottom: 1em;
+    padding: 1em;
+    background-color: #f9f9f9;
+  }
+  body.dark .recipe-item {
+    background-color: #222;
+    border-color: #444;
+  }
+
+  .recipe-item h3 {
+    margin-top: 0;
+  }
+
+  .ingredients-list {
+    margin: 0.3em 0 0.8em 1em;
+  }
+
+  .instructions {
+    white-space: pre-wrap;
+  }
+
+  .flex-row {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1em;
+  }
+
+  .portion-input {
+    width: 80px;
+    padding: 0.4em;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+  }
+  body.dark .portion-input {
+    background-color: #333;
+    border: 1px solid #555;
+    color: var(--color-text-dark);
+  }
+
+  .toggle-switch {
+    position: fixed;
+    top: 1em;
+    right: 1em;
+    user-select: none;
+  }
+
+  footer {
+    margin-top: auto;
+    padding: 1em 0;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #888;
+  }
+  body.dark footer {
+    color: #bbb;
+  }
+
+  @media (max-width: 600px) {
+    input[type="text"] {
+      width: 100%;
+      max-width: none;
+    }
+  }
 </style>
 </head>
 <body>
-<header>
-  <h1>Recipe Generator — Offline</h1>
-  <div class="actions">
-    <div id="regionLabel" class="muted">Unit: Metric</div>
-    <button id="toggleUnitsBtn" class="small-btn" title="Toggle units">Toggle Units</button>
+  <div class="toggle-switch" title="Toggle Dark Mode">
+    <label>
+      <input type="checkbox" id="darkModeToggle" aria-label="Toggle dark mode" />
+      🌙 Dark Mode
+    </label>
   </div>
-</header>
-
-<main id="mainApp">
-  <div class="grid">
-    <!-- left: form -->
-    <section class="card">
-      <h2 style="margin:0 0 8px 0">Create / Edit Recipe</h2>
-
-      <label>Recipe name</label>
-      <input id="recipeName" placeholder="e.g. Chicken Curry">
-
-      <label>Servings (recipe yields)</label>
-      <input id="baseServings" type="number" min="1" value="1" class="small-input">
-
-      <label>Ingredients (one per line, include measurement) — e.g. <code>200 g chicken breast</code></label>
-      <textarea id="ingredients" placeholder="200 g chicken breast&#10;100 g tomato&#10;15 ml olive oil"></textarea>
-
-      <label>Instructions (one step per line; optional timer like <code>[10m]</code>)</label>
-      <textarea id="instructions" placeholder="Boil chicken [20m]&#10;Sauté onions [5m]"></textarea>
-
-      <div style="display:flex;gap:8px;margin-top:10px">
-        <button id="saveBtn">Save Recipe</button>
-        <button id="clearBtn" class="small-btn">Clear</button>
-      </div>
-
-      <div style="margin-top:12px" class="muted">Tip: set the base servings the recipe yields — scaling will use this.</div>
-
-      <div id="generatedArea" style="margin-top:14px" class="hidden card">
-        <h3 style="margin:0">Nutrition (approx)</h3>
-        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
-          <div class="muted">Scale to</div>
-          <input id="displayServings" type="number" min="1" value="1" class="small-input">
-          <div class="muted">servings</div>
-        </div>
-        <div id="nutritionSummary" class="nutrition-line muted" style="margin-top:8px">N/A</div>
-        <div id="perStepNutrition" style="margin-top:8px"></div>
-        <div style="margin-top:8px" class="flex">
-          <button id="printRecipeBtn" class="small-btn">Print Recipe</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- right: recipes list -->
-    <aside>
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center">
-          <strong>My Recipes</strong>
-          <input id="search" placeholder="Search..." class="muted" style="width:55%">
-        </div>
-        <div id="recipesList" style="margin-top:10px;max-height:62vh;overflow:auto"></div>
-
-        <div style="display:flex;gap:8px;margin-top:8px">
-          <button id="refreshBtn" class="small-btn">Refresh</button>
-          <button id="clearAllBtn" class="small-btn">Clear All</button>
-        </div>
-      </div>
-
-      <div style="height:12px"></div>
-      <div class="card">
-        <strong>Quick Actions</strong>
-        <div style="margin-top:8px" class="flex">
-          <button id="randomSuggest" class="small-btn">Suggest Random</button>
-          <button id="importSample" class="small-btn">Load Sample</button>
-        </div>
-        <p class="muted" style="margin-top:8px">All data stored locally in your browser.</p>
-      </div>
-    </aside>
-  </div>
-
-  <!-- Cook Mode -->
-  <div id="cookPanel" class="card hidden" style="margin-top:14px">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <strong id="cookTitle">Cook Mode</strong>
-      <div class="muted" id="cookProgress"></div>
+  <main>
+    <h1>Recipe Generator</h1>
+    <p>Enter ingredients you have (comma separated):</p>
+    <input type="text" id="ingredientsInput" placeholder="e.g. chicken, rice, tomato" aria-label="Enter ingredients" />
+    <div class="flex-row" style="justify-content:center;">
+      <button id="generateBtn">Generate Recipes</button>
+      <button id="showFavBtn" class="secondary">Show Favorites</button>
     </div>
-    <div style="margin-top:8px">
-      <div id="stepText" style="font-size:18px"></div>
-      <div id="timerText" class="muted" style="margin-top:6px"></div>
-      <div id="stepNutritionText" class="step-nut" style="margin-top:6px"></div>
-    </div>
-    <div style="display:flex;gap:8px;margin-top:10px">
-      <button id="prevStepBtn" class="small-btn">Previous</button>
-      <button id="nextStepBtn" class="small-btn">Next</button>
-      <button id="stopCookBtn" class="small-btn">Exit</button>
-    </div>
-  </div>
 
-  <!-- Shop Panel -->
-  <div id="shopPanel" class="card hidden" style="margin-top:14px">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <strong id="shopTitle">Shopping List</strong>
-      <div class="muted">Per recipe</div>
+    <div id="portionControl" style="display:none; margin-top:1em;">
+      <label for="portionInput">Adjust Portions:</label>
+      <input type="number" id="portionInput" min="1" value="1" class="portion-input" aria-label="Adjust portions" />
     </div>
-    <div id="shopItems" style="margin-top:8px"></div>
-    <div style="display:flex;gap:8px;margin-top:10px">
-      <button id="closeShopBtn" class="small-btn">Close</button>
-      <button id="clearShopBtn" class="small-btn">Clear Checked</button>
-    </div>
-  </div>
 
-  <!-- Print view -->
-  <div id="printView" class="print-only hidden" style="padding:20px;background:#fff">
-    <div id="printContent"></div>
-  </div>
-
-  <div style="height:20px"></div>
-  <footer class="app-footer">© Manik Roy 2025</footer>
-</main>
+    <div id="recipes" class="recipe-list" aria-live="polite" aria-atomic="true"></div>
+    <div id="favorites" class="favorites-list" style="display:none;" aria-live="polite" aria-atomic="true"></div>
+  </main>
+  <footer>© Manik Roy 2025</footer>
 
 <script>
-/* ============================
-   FULL Nutrition DB — 220+ items
-   Values per 100 g (approx)
-   ============================ */
-const BIG_NUTRITION_DB = {
-  "chicken breast": { cal:165, protein:31, carbs:0, fat:3.6 },
-  "chicken thigh": { cal:209, protein:26, carbs:0, fat:10.9 },
-  "chicken (dark meat)": { cal:215, protein:24, carbs:0, fat:12 },
-  "beef (ground)": { cal:250, protein:26, carbs:0, fat:15 },
-  "beef (steak)": { cal:271, protein:25.8, carbs:0, fat:18.9 },
-  "pork (loin)": { cal:242, protein:27, carbs:0, fat:14 },
-  "pork (bacon)": { cal:541, protein:37, carbs:1.4, fat:42 },
-  "lamb": { cal:294, protein:25.6, carbs:0, fat:21.2 },
-  "duck": { cal:337, protein:19, carbs:0, fat:28 },
-  "salmon": { cal:208, protein:20, carbs:0, fat:13 },
-  "tuna": { cal:130, protein:29, carbs:0, fat:1 },
-  "trout": { cal:148, protein:20.5, carbs:0, fat:6.6 },
-  "cod": { cal:82, protein:18, carbs:0, fat:0.7 },
-  "halibut": { cal:140, protein:23, carbs:0, fat:3 },
-  "shrimp": { cal:99, protein:24, carbs:0.2, fat:0.3 },
-  "crab": { cal:83, protein:18, carbs:0, fat:1 },
-  "lobster": { cal:89, protein:19, carbs:0, fat:1 },
-  "sardine": { cal:208, protein:25, carbs:0, fat:11.5 },
-  "anchovy": { cal:210, protein:29, carbs:0, fat:8 },
-  "mackerel": { cal:205, protein:19, carbs:0, fat:13.9 },
-  "egg (whole)": { cal:155, protein:13, carbs:1.1, fat:11 },
-  "egg white": { cal:52, protein:11, carbs:0.7, fat:0.2 },
-  "egg yolk": { cal:322, protein:15.9, carbs:3.6, fat:26.5 },
-  "milk (whole)": { cal:60, protein:3.2, carbs:5, fat:3.3 },
-  "milk (skim)": { cal:34, protein:3.4, carbs:5, fat:0.1 },
-  "almond milk": { cal:15, protein:0.5, carbs:0.3, fat:1.2 },
-  "soy milk": { cal:33, protein:3.3, carbs:0.7, fat:1.6 },
-  "yogurt (plain)": { cal:59, protein:10, carbs:3.6, fat:0.4 },
-  "greek yogurt": { cal:59, protein:10, carbs:3.6, fat:0.4 },
-  "cheddar cheese": { cal:403, protein:25, carbs:1.3, fat:33 },
-  "mozzarella": { cal:280, protein:28, carbs:3.1, fat:17 },
-  "parmesan": { cal:431, protein:38, carbs:4.1, fat:29 },
-  "cream (double)": { cal:340, protein:2.8, carbs:2.9, fat:36 },
-  "butter": { cal:717, protein:0.85, carbs:0.06, fat:81 },
-  "cream cheese": { cal:342, protein:6.2, carbs:4.1, fat:34 },
-  "cottage cheese": { cal:98, protein:11.1, carbs:3.4, fat:4.3 },
-  "tofu": { cal:76, protein:8, carbs:1.9, fat:4.8 },
-  "tempeh": { cal:193, protein:20.3, carbs:9.4, fat:10.8 },
-  "seitan": { cal:370, protein:75, carbs:14, fat:1.9 },
-  "lentils (cooked)": { cal:116, protein:9, carbs:20, fat:0.4 },
-  "chickpeas (cooked)": { cal:164, protein:8.9, carbs:27.4, fat:2.6 },
-  "black beans (cooked)": { cal:132, protein:8.9, carbs:23.7, fat:0.5 },
-  "kidney beans (cooked)": { cal:127, protein:8.7, carbs:22.8, fat:0.5 },
-  "peas (green)": { cal:81, protein:5.4, carbs:14.5, fat:0.4 },
-  "edamame": { cal:121, protein:11.9, carbs:8.9, fat:5.2 },
-  "quinoa (cooked)": { cal:120, protein:4.4, carbs:21.3, fat:1.9 },
-  "rice (white, cooked)": { cal:130, protein:2.7, carbs:28, fat:0.3 },
-  "brown rice (cooked)": { cal:123, protein:2.7, carbs:25.6, fat:1 },
-  "basmati rice (cooked)": { cal:121, protein:2.6, carbs:25.2, fat:0.4 },
-  "wild rice (cooked)": { cal:101, protein:4, carbs:21.3, fat:0.3 },
-  "pasta (cooked)": { cal:131, protein:5, carbs:25, fat:1.1 },
-  "pasta (whole wheat)": { cal:124, protein:5.8, carbs:27.3, fat:1.6 },
-  "bread (white)": { cal:265, protein:9, carbs:49, fat:3.2 },
-  "bread (whole wheat)": { cal:247, protein:13.2, carbs:41.4, fat:4.2 },
-  "oats (dry)": { cal:389, protein:17, carbs:66, fat:7 },
-  "flour (all-purpose)": { cal:364, protein:10, carbs:76, fat:1 },
-  "cornmeal": { cal:370, protein:6.9, carbs:79, fat:3.9 },
-  "polenta": { cal:70, protein:1.5, carbs:15.3, fat:0.4 },
-  "couscous (cooked)": { cal:112, protein:3.8, carbs:23.2, fat:0.2 },
-  "barley (pearled, cooked)": { cal:123, protein:2.3, carbs:28, fat:0.4 },
-  "millet (cooked)": { cal:119, protein:3.5, carbs:23.7, fat:1 },
-  "bulgur (cooked)": { cal:83, protein:3.1, carbs:18.6, fat:0.2 },
-  "potato (white)": { cal:77, protein:2, carbs:17, fat:0.1 },
-  "sweet potato": { cal:86, protein:1.6, carbs:20.1, fat:0.1 },
-  "yam": { cal:118, protein:1.5, carbs:27.9, fat:0.2 },
-  "corn (sweet, cooked)": { cal:86, protein:3.3, carbs:19, fat:1.2 },
-  "tomato": { cal:18, protein:0.9, carbs:3.9, fat:0.2 },
-  "canned tomato": { cal:21, protein:1.1, carbs:4.3, fat:0.2 },
-  "tomato paste": { cal:82, protein:4.2, carbs:18.9, fat:0.5 },
-  "onion": { cal:40, protein:1.1, carbs:9.3, fat:0.1 },
-  "garlic": { cal:149, protein:6.4, carbs:33, fat:0.5 },
-  "shallot": { cal:72, protein:2.5, carbs:16.8, fat:0.1 },
-  "scallion": { cal:32, protein:1.8, carbs:7.3, fat:0.2 },
-  "bell pepper": { cal:31, protein:1, carbs:6, fat:0.3 },
-  "cucumber": { cal:16, protein:0.7, carbs:3.6, fat:0.1 },
-  "lettuce": { cal:15, protein:1.4, carbs:2.9, fat:0.2 },
-  "spinach": { cal:23, protein:2.9, carbs:3.6, fat:0.4 },
-  "kale": { cal:35, protein:2.9, carbs:4.4, fat:0.4 },
-  "broccoli": { cal:55, protein:3.7, carbs:11.1, fat:0.6 },
-  "cauliflower": { cal:25, protein:1.9, carbs:5, fat:0.3 },
-  "carrot": { cal:41, protein:0.9, carbs:10, fat:0.2 },
-  "parsnip": { cal:75, protein:1.2, carbs:18, fat:0.3 },
-  "beetroot": { cal:43, protein:1.6, carbs:10, fat:0.2 },
-  "zucchini": { cal:17, protein:1.2, carbs:3.1, fat:0.3 },
-  "eggplant": { cal:25, protein:1, carbs:6, fat:0.2 },
-  "mushroom (white)": { cal:22, protein:3.1, carbs:3.3, fat:0.3 },
-  "portobello mushroom": { cal:29, protein:2.1, carbs:4.3, fat:0.3 },
-  "avocado": { cal:160, protein:2, carbs:9, fat:15 },
-  "olive": { cal:115, protein:0.8, carbs:3.8, fat:10.7 },
-  "olive oil": { cal:884, protein:0, carbs:0, fat:100 },
-  "canola oil": { cal:884, protein:0, carbs:0, fat:100 },
-  "sunflower oil": { cal:884, protein:0, carbs:0, fat:100 },
-  "sesame oil": { cal:884, protein:0, carbs:0, fat:100 },
-  "coconut oil": { cal:862, protein:0, carbs:0, fat:100 },
-  "peanut butter": { cal:588, protein:25, carbs:20, fat:50 },
-  "almonds": { cal:579, protein:21, carbs:22, fat:50 },
-  "cashews": { cal:553, protein:18, carbs:30, fat:44 },
-  "walnuts": { cal:654, protein:15, carbs:14, fat:65 },
-  "pecans": { cal:691, protein:9.2, carbs:13.9, fat:72 },
-  "hazelnuts": { cal:628, protein:15, carbs:17, fat:61 },
-  "pistachios": { cal:562, protein:20, carbs:28, fat:45 },
-  "macadamia": { cal:718, protein:7.9, carbs:14, fat:76 },
-  "sunflower seeds": { cal:584, protein:20.8, carbs:20, fat:51.5 },
-  "pumpkin seeds": { cal:559, protein:30, carbs:10.7, fat:49 },
-  "chia seeds": { cal:486, protein:16.5, carbs:42.1, fat:30.7 },
-  "flaxseed": { cal:534, protein:18.3, carbs:28.9, fat:42.2 },
-  "sesame seeds": { cal:573, protein:17, carbs:23.4, fat:49.7 },
-  "sugar (white)": { cal:387, protein:0, carbs:100, fat:0 },
-  "brown sugar": { cal:380, protein:0, carbs:98, fat:0 },
-  "honey": { cal:304, protein:0.3, carbs:82.4, fat:0 },
-  "maple syrup": { cal:260, protein:0.1, carbs:67, fat:0 },
-  "molasses": { cal:290, protein:0, carbs:75, fat:0 },
-  "dark chocolate": { cal:546, protein:4.9, carbs:61, fat:31 },
-  "milk chocolate": { cal:535, protein:7.6, carbs:61, fat:30 },
-  "cocoa powder": { cal:228, protein:19.6, carbs:57.9, fat:13.7 },
-  "soy sauce": { cal:53, protein:8, carbs:4.9, fat:0.1 },
-  "ketchup": { cal:112, protein:1.3, carbs:25, fat:0.3 },
-  "mayonnaise": { cal:680, protein:0.9, carbs:0.6, fat:75 },
-  "mustard": { cal:66, protein:4.4, carbs:5.8, fat:4.2 },
-  "vinegar (white)": { cal:18, protein:0, carbs:0.1, fat:0 },
-  "balsamic vinegar": { cal:88, protein:0.5, carbs:17, fat:0 },
-  "salt": { cal:0, protein:0, carbs:0, fat:0 },
-  "black pepper": { cal:255, protein:10.4, carbs:64.8, fat:3.3 },
-  "cinnamon": { cal:247, protein:4, carbs:81, fat:1.2 },
-  "turmeric": { cal:312, protein:9.7, carbs:67.1, fat:3.3 },
-  "ginger": { cal:80, protein:1.8, carbs:18, fat:0.8 },
-  "cumin": { cal:375, protein:18, carbs:44, fat:22 },
-  "paprika": { cal:282, protein:14.1, carbs:54.9, fat:12.9 },
-  "oregano": { cal:265, protein:9, carbs:69, fat:4 },
-  "basil (fresh)": { cal:23, protein:3.2, carbs:2.7, fat:0.6 },
-  "parsley": { cal:36, protein:3, carbs:6, fat:0.8 },
-  "cilantro": { cal:23, protein:2.1, carbs:3.7, fat:0.5 },
-  "rosemary": { cal:131, protein:3.3, carbs:20.7, fat:5.9 },
-  "thyme": { cal:101, protein:5.6, carbs:24.5, fat:1.7 },
-  "bay leaf": { cal:313, protein:7.6, carbs:74.5, fat:8.4 },
-  "chili powder": { cal:282, protein:12, carbs:49, fat:14 },
-  "saffron": { cal:310, protein:11.4, carbs:65.4, fat:5.9 },
-  "nutmeg": { cal:525, protein:6, carbs:49, fat:36 },
-  "clove": { cal:274, protein:5.9, carbs:66, fat:13 },
-  "cardamom": { cal:311, protein:10, carbs:68, fat:6.7 },
-  "lemon": { cal:29, protein:1.1, carbs:9.3, fat:0.3 },
-  "lime": { cal:30, protein:0.7, carbs:10.5, fat:0.2 },
-  "orange": { cal:47, protein:0.9, carbs:12, fat:0.1 },
-  "apple": { cal:52, protein:0.3, carbs:14, fat:0.2 },
-  "pear": { cal:57, protein:0.4, carbs:15, fat:0.1 },
-  "banana": { cal:89, protein:1.1, carbs:23, fat:0.3 },
-  "mango": { cal:60, protein:0.8, carbs:15, fat:0.4 },
-  "pineapple": { cal:50, protein:0.5, carbs:13.1, fat:0.1 },
-  "strawberry": { cal:33, protein:0.7, carbs:8, fat:0.3 },
-  "blueberry": { cal:57, protein:0.7, carbs:14.5, fat:0.3 },
-  "raspberry": { cal:52, protein:1.2, carbs:11.9, fat:0.7 },
-  "blackberry": { cal:43, protein:1.4, carbs:9.6, fat:0.5 },
-  "grape": { cal:69, protein:0.7, carbs:18, fat:0.2 },
-  "cherry": { cal:63, protein:1, carbs:16, fat:0.2 },
-  "watermelon": { cal:30, protein:0.6, carbs:8, fat:0.2 },
-  "cantaloupe": { cal:34, protein:0.8, carbs:8.2, fat:0.2 },
-  "honeydew": { cal:36, protein:0.5, carbs:9.1, fat:0.1 },
-  "dates": { cal:282, protein:2.5, carbs:75, fat:0.4 },
-  "prunes": { cal:240, protein:2.2, carbs:63.9, fat:0.4 },
-  "raisins": { cal:299, protein:3.1, carbs:79, fat:0.5 },
-  "coconut (raw)": { cal:354, protein:3.3, carbs:15.2, fat:33.5 },
-  "coconut milk": { cal:230, protein:2.3, carbs:6.4, fat:24 },
-  "coconut water": { cal:19, protein:0.7, carbs:3.7, fat:0.2 },
-  "toffee": { cal:380, protein:2.5, carbs:85, fat:1.5 },
-  "marshmallow": { cal:318, protein:0.1, carbs:81.4, fat:0.1 },
-  "gelatin (dry)": { cal:335, protein:87, carbs:0, fat:0 },
-  "pearl barley (dry)": { cal:354, protein:12.5, carbs:73.5, fat:2.3 },
-  "amaranth (cooked)": { cal:102, protein:3.8, carbs:19.1, fat:1.6 },
-  "buckwheat (cooked)": { cal:92, protein:3.4, carbs:19.9, fat:0.6 },
-  "sorghum (cooked)": { cal:92, protein:3.1, carbs:20.5, fat:1.3 },
-  "teff (cooked)": { cal:101, protein:3.9, carbs:20.9, fat:0.9 },
-  "tapioca (pearls, cooked)": { cal:358, protein:0.2, carbs:88.7, fat:0.1 },
-  "cassava (raw)": { cal:160, protein:1.4, carbs:38.1, fat:0.3 },
-  "plantain (raw)": { cal:122, protein:1.3, carbs:31.9, fat:0.3 },
-  "canned beans (mixed)": { cal:130, protein:6.5, carbs:22, fat:0.5 },
-  "veg broth (prepared)": { cal:12, protein:0.5, carbs:1.8, fat:0.2 },
-  "chicken broth (prepared)": { cal:15, protein:1.5, carbs:0.7, fat:0.5 },
-  "beef broth (prepared)": { cal:17, protein:1.8, carbs:0.4, fat:0.6 },
-  "miso paste": { cal:199, protein:11.7, carbs:26.7, fat:6.4 },
-  "nutmeg powder": { cal:525, protein:6, carbs:49, fat:36 },
-  "allspice": { cal:263, protein:6.5, carbs:72.5, fat:7.5 },
-  "wasabi (prepared)": { cal:109, protein:2.5, carbs:23.5, fat:0.6 },
-  "horseradish (prepared)": { cal:48, protein:1.2, carbs:11.3, fat:0.3 },
-  "capers": { cal:23, protein:2.4, carbs:4.9, fat:0.9 },
-  "anchovy paste": { cal:210, protein:28, carbs:0, fat:10 },
-  "fish sauce": { cal:85, protein:12.8, carbs:1, fat:0 },
-  "oyster sauce": { cal:51, protein:0.9, carbs:12.2, fat:0.1 },
-  "hoisin sauce": { cal:220, protein:3.7, carbs:36, fat:6.7 },
-  "teriyaki sauce": { cal:257, protein:5.6, carbs:44.4, fat:0.6 },
-  "barbecue sauce": { cal:150, protein:0.6, carbs:33.4, fat:0.5 },
-  "curry paste (red)": { cal:250, protein:4.6, carbs:18.6, fat:17.8 },
-  "curry paste (green)": { cal:260, protein:5, carbs:20, fat:18 },
-  "curry powder": { cal:325, protein:8.7, carbs:58.4, fat:9.9 },
-  "apple cider vinegar": { cal:21, protein:0, carbs:0.9, fat:0 },
-  "pickle (cucumber)": { cal:11, protein:0.3, carbs:2.4, fat:0.1 },
-  "sour cream": { cal:214, protein:2.9, carbs:4, fat:20 },
-  "buttermilk": { cal:40, protein:3.3, carbs:4.8, fat:1.6 },
-  "evaporated milk": { cal:134, protein:7.9, carbs:10, fat:7.5 },
-  "condensed milk": { cal:321, protein:7.9, carbs:54.4, fat:8.7 },
-  "mayonnaise (light)": { cal:330, protein:1, carbs:1.2, fat:34 },
-  "peanut (raw)": { cal:567, protein:25.8, carbs:16.1, fat:49.2 },
-  "soybean (dry)": { cal:446, protein:36.5, carbs:30.2, fat:19.9 },
-  "green beans": { cal:31, protein:1.8, carbs:7, fat:0.2 },
-  "okra": { cal:33, protein:1.9, carbs:7.5, fat:0.2 },
-  "brussels sprouts": { cal:43, protein:3.4, carbs:9, fat:0.3 },
-  "artichoke (cooked)": { cal:47, protein:3.3, carbs:10.5, fat:0.2 },
-  "asparagus": { cal:20, protein:2.2, carbs:3.9, fat:0.1 },
-  "snow peas": { cal:42, protein:2.8, carbs:7.5, fat:0.3 },
-  "bok choy": { cal:13, protein:1.5, carbs:2.2, fat:0.2 },
-  "napa cabbage": { cal:16, protein:1.2, carbs:3.2, fat:0.2 },
-  "daikon": { cal:18, protein:0.6, carbs:4.1, fat:0.1 },
-  "jicama": { cal:38, protein:0.7, carbs:9.3, fat:0.1 },
-  "sugar snap peas": { cal:42, protein:2.8, carbs:7.5, fat:0.3 },
-  "endive": { cal:17, protein:1.3, carbs:3.4, fat:0.2 },
-  "radish": { cal:16, protein:0.7, carbs:3.4, fat:0.1 },
-  "fennel": { cal:31, protein:1.2, carbs:7.3, fat:0.2 },
-  "celery": { cal:16, protein:0.7, carbs:3, fat:0.2 },
-  "ginger (powder)": { cal:335, protein:8.9, carbs:71.6, fat:4.2 },
-  "turmeric (powder)": { cal:312, protein:9.7, carbs:67.1, fat:3.3 },
-  "matcha powder": { cal:312, protein:30, carbs:38, fat:6 },
-  "espresso (prepared)": { cal:2, protein:0.1, carbs:0, fat:0 },
-  "black coffee (brewed)": { cal:1, protein:0.1, carbs:0, fat:0 },
-  "green tea (brewed)": { cal:1, protein:0.2, carbs:0, fat:0 },
-  "black tea (brewed)": { cal:1, protein:0.1, carbs:0, fat:0 },
-  "beer (lager)": { cal:43, protein:0.5, carbs:3.6, fat:0 },
-  "red wine": { cal:85, protein:0.1, carbs:2.6, fat:0 },
-  "white wine": { cal:82, protein:0.1, carbs:2.6, fat:0 },
-  "vodka (40%)": { cal:231, protein:0, carbs:0, fat:0 },
-  "rum (40%)": { cal:231, protein:0, carbs:0, fat:0 },
-  "whisky (40%)": { cal:250, protein:0, carbs:0, fat:0 },
-  "champagne": { cal:76, protein:0.2, carbs:1.9, fat:0 },
-  "cider (apple)": { cal:46, protein:0.1, carbs:10.3, fat:0 },
-  "sake": { cal:134, protein:0.9, carbs:5.7, fat:0 },
-  "tofu (firm)": { cal:144, protein:17.3, carbs:1.6, fat:7.7 },
-  "seeds (mixed)": { cal:560, protein:22, carbs:20, fat:45 },
-  "protein powder (whey)": { cal:400, protein:80, carbs:8, fat:6 },
-  "protein powder (plant)": { cal:380, protein:70, carbs:10, fat:6 },
-  "almond flour": { cal:570, protein:21, carbs:10, fat:50 },
-  "coconut flour": { cal:400, protein:18, carbs:60, fat:12 },
-  "gluten free flour (blend)": { cal:370, protein:8, carbs:78, fat:1.5 },
-  "breadcrumbs (plain)": { cal:395, protein:13, carbs:73, fat:4.8 },
-  "panko breadcrumbs": { cal:360, protein:8.8, carbs:72.5, fat:3.3 },
-  "yeast (active dry)": { cal:325, protein:40, carbs:41, fat:7 },
-  "sourdough starter (fed)": { cal:150, protein:5, carbs:30, fat:1 },
-  "marjoram": { cal:271, protein:9, carbs:68, fat:7.3 },
-  "tarragon": { cal:295, protein:7.6, carbs:63.1, fat:7.1 },
-  "dill (fresh)": { cal:43, protein:3.5, carbs:7, fat:1.1 },
-  "marmalade": { cal:250, protein:0.3, carbs:64.1, fat:0.2 },
-  "jam (strawberry)": { cal:250, protein:0.3, carbs:65, fat:0.1 },
-  "nutella": { cal:546, protein:6, carbs:57, fat:31 },
-  "peanut brittle": { cal:500, protein:6, carbs:70, fat:22 },
-  "energy bar (average)": { cal:380, protein:8, carbs:55, fat:12 },
-  "granola (store)": { cal:471, protein:8, carbs:64, fat:20 },
-  "muesli": { cal:350, protein:9, carbs:65, fat:5 },
-  "protein bar": { cal:350, protein:20, carbs:30, fat:12 },
-  "chia pudding (prepared)": { cal:200, protein:6, carbs:20, fat:10 },
-  "kimchi": { cal:15, protein:1.1, carbs:2.4, fat:0.5 },
-  "sauerkraut": { cal:19, protein:0.9, carbs:4.3, fat:0.1 },
-  "tempeh (fermented)": { cal:193, protein:20.3, carbs:9.4, fat:10.8 },
-  "nori (seaweed sheet)": { cal:35, protein:5.8, carbs:5.1, fat:0.3 },
-  "kombu": { cal:43, protein:1.7, carbs:9.6, fat:0.6 }
-};
+  (() => {
+    // Sample recipe database
+    const recipes = [
+      {
+        id: 1,
+        name: "Tomato Rice",
+        ingredients: ["rice", "tomato", "onion", "garlic", "oil", "salt"],
+        instructions: "1. Heat oil, sauté onion and garlic.\n2. Add chopped tomato and cook till soft.\n3. Add rice and salt.\n4. Add water, cook covered till rice is done.",
+        servings: 2,
+      },
+      {
+        id: 2,
+        name: "Chicken Stir Fry",
+        ingredients: ["chicken", "soy sauce", "bell pepper", "onion", "oil", "garlic", "salt"],
+        instructions: "1. Cut chicken into strips.\n2. Heat oil, sauté garlic and onion.\n3. Add chicken, cook till browned.\n4. Add bell pepper and soy sauce.\n5. Stir fry till cooked through.",
+        servings: 3,
+      },
+      {
+        id: 3,
+        name: "Vegetable Omelette",
+        ingredients: ["eggs", "tomato", "onion", "bell pepper", "salt", "pepper", "oil"],
+        instructions: "1. Beat eggs with salt and pepper.\n2. Heat oil, sauté vegetables.\n3. Pour eggs, cook until set.\n4. Fold and serve.",
+        servings: 1,
+      },
+      {
+        id: 4,
+        name: "Pasta with Tomato Sauce",
+        ingredients: ["pasta", "tomato", "garlic", "olive oil", "salt", "basil"],
+        instructions: "1. Boil pasta.\n2. Heat olive oil, sauté garlic.\n3. Add tomato, cook into sauce.\n4. Mix pasta with sauce.\n5. Garnish with basil.",
+        servings: 2,
+      },
+      {
+        id: 5,
+        name: "Fruit Salad",
+        ingredients: ["apple", "banana", "orange", "grapes", "honey", "lemon juice"],
+        instructions: "1. Chop all fruits.\n2. Mix honey and lemon juice.\n3. Toss fruits with dressing.\n4. Chill and serve.",
+        servings: 4,
+      }
+    ];
 
-/* synonyms to improve matching */
-const SYNONYMS = {
-  "tomatoes":"tomato",
-  "olive-oil":"olive oil",
-  "oliveoil":"olive oil",
-  "boneless chicken":"chicken breast",
-  "brown rice":"rice",
-  "pasta (dry)":"pasta",
-  "cheddar":"cheddar cheese",
-  "mozzarella cheese":"mozzarella",
-  "milk (whole)":"milk (whole)",
-  "soy sauce":"soy sauce"
-};
+    // DOM elements
+    const ingredientsInput = document.getElementById('ingredientsInput');
+    const generateBtn = document.getElementById('generateBtn');
+    const recipesDiv = document.getElementById('recipes');
+    const portionControl = document.getElementById('portionControl');
+    const portionInput = document.getElementById('portionInput');
+    const favoritesDiv = document.getElementById('favorites');
+    const showFavBtn = document.getElementById('showFavBtn');
+    const darkModeToggle = document.getElementById('darkModeToggle');
 
-/* Unit parsing & helpers */
-const UNIT_MAP = {
-  "g": {to_g:1,type:'mass'}, "gram":{to_g:1,type:'mass'}, "grams":{to_g:1,type:'mass'},
-  "kg":{to_g:1000,type:'mass'}, "kilogram":{to_g:1000,type:'mass'},
-  "mg":{to_g:0.001,type:'mass'},
-  "ml":{to_ml:1,type:'vol'}, "milliliter":{to_ml:1,type:'vol'}, "l":{to_ml:1000,type:'vol'}, "liter":{to_ml:1000,type:'vol'},
-  "tsp":{to_ml:4.928,type:'vol'}, "teaspoon":{to_ml:4.928,type:'vol'},
-  "tbsp":{to_ml:14.787,type:'vol'}, "tablespoon":{to_ml:14.787,type:'vol'},
-  "cup":{to_ml:240,type:'vol'}, "cups":{to_ml:240,type:'vol'},
-  "oz":{to_g:28.3495,type:'mass'}, "ounce":{to_g:28.3495,type:'mass'},
-  "lb":{to_g:453.592,type:'mass'}, "pound":{to_g:453.592,type:'mass'}
-};
-function evalFraction(frac){ if (typeof frac !== 'string') return parseFloat(frac); if (frac.includes(' ')){ const parts=frac.split(' '); return parseFloat(parts[0])+evalFraction(parts[1]); } if (frac.includes('/')){ const [a,b]=frac.split('/'); return parseFloat(a)/parseFloat(b); } return parseFloat(frac); }
-function normalizeText(s){ return (s||'').toLowerCase().replace(/[.,()]/g,'').replace(/\s+/g,' ').trim(); }
+    // State
+    let currentRecipes = [];
+    let currentPortion = 1;
+    let showingFavorites = false;
 
-/* parse ingredient line */
-function parseIngredientLine(line){
-  const raw = (line||'').trim();
-  if (!raw) return null;
-  const regex = /^([\d\s\/.]+)?\s*([a-zA-Z%]+)?\s*(.*)$/;
-  const m = raw.match(regex);
-  if (!m) return { raw, name: raw, quantity: null, quantity_unit: null };
-  const qtyRaw = (m[1]||'').trim();
-  const unitRaw = (m[2]||'').toLowerCase();
-  const rest = (m[3]||'').trim();
-  if (!qtyRaw) return { raw, name: rest || unitRaw || raw, quantity: null, quantity_unit: null };
-  const qty = evalFraction(qtyRaw);
-  if (UNIT_MAP[unitRaw]){
-    const u = UNIT_MAP[unitRaw];
-    if (u.type === 'mass') return { raw, name: rest||unitRaw, quantity: qty * (u.to_g||1), quantity_unit: 'g' };
-    if (u.type === 'vol') return { raw, name: rest||unitRaw, quantity: qty * (u.to_ml||1), quantity_unit: 'ml' };
-  }
-  // fallback: keep qty and reported unit
-  return { raw, name: ((unitRaw + ' ' + rest).trim()||raw), quantity: qty, quantity_unit: unitRaw };
-}
-
-/* match DB key (best substring) */
-function matchNutritionKey(name){
-  if (!name) return null;
-  let n = normalizeText(name);
-  if (SYNONYMS[n]) return SYNONYMS[n];
-  if (BIG_NUTRITION_DB[n]) return n;
-  let best=null, bestLen=0;
-  for (const key in BIG_NUTRITION_DB){
-    if (n.includes(key) && key.length > bestLen){ best = key; bestLen = key.length; }
-  }
-  if (best) return best;
-  const nameWords = n.split(' ');
-  for (const key in BIG_NUTRITION_DB){
-    for (const w of nameWords){
-      if (w && key.includes(w) && key.length > bestLen){ best = key; bestLen = key.length; }
+    // Utility: Normalize strings (lowercase, trim)
+    function normalize(str) {
+      return str.trim().toLowerCase();
     }
-  }
-  return best;
-}
 
-/* Unit display & formatting */
-let UNIT_SYSTEM = localStorage.getItem('unit_system_vgen') || 'metric';
-function setUnitSystem(sys){ UNIT_SYSTEM=sys; localStorage.setItem('unit_system_vgen', sys); document.getElementById('regionLabel').textContent = 'Unit: ' + (sys==='metric'?'Metric':'Imperial'); renderRecipes(); }
-function gramsToOz(g){ return g/28.3495; }
-function mlToCups(ml){ return ml/240; }
-function formatIngredientForDisplay(line, scale=1){
-  const p = parseIngredientLine(line);
-  if (!p) return line;
-  if (p.quantity == null) return p.name;
-  const qty = p.quantity * scale;
-  if (p.quantity_unit === 'g'){
-    if (UNIT_SYSTEM==='metric') return `${Math.round(qty)} g ${p.name}`;
-    else return `${gramsToOz(qty).toFixed(2)} oz ${p.name}`;
-  } else if (p.quantity_unit === 'ml'){
-    if (UNIT_SYSTEM==='metric') return `${Math.round(qty)} ml ${p.name}`;
-    else return `${mlToCups(qty).toFixed(2)} cup(s) ${p.name}`;
-  } else {
-    return p.raw;
-  }
-}
-
-/* App state & storage */
-let recipes = JSON.parse(localStorage.getItem('recipes_vgen') || '[]');
-/* Prefill examples if empty */
-if (!recipes || recipes.length === 0) {
-  recipes = [
-    {
-      name: 'Spicy Tomato Pasta',
-      servings: 2,
-      ingredients: ['200 g pasta','150 g tomato','10 g garlic','15 ml olive oil','5 g basil'],
-      instructions: [{step:'Boil pasta',time:10},{step:'Sauté garlic and tomato',time:5},{step:'Mix pasta and sauce',time:2}],
-      shoppingList: [{item:'200 g pasta',checked:false},{item:'150 g tomato',checked:false}],
-      created: Date.now()
-    },
-    {
-      name: 'Simple Chicken Stirfry',
-      servings: 2,
-      ingredients: ['250 g chicken breast','100 g bell pepper','30 ml soy sauce','15 ml olive oil','50 g onion'],
-      instructions: [{step:'Slice and marinate chicken',time:0},{step:'Fry chicken',time:8},{step:'Add veggies & sauce',time:5}],
-      shoppingList: [{item:'250 g chicken breast',checked:false},{item:'100 g bell pepper',checked:false}],
-      created: Date.now()
+    // Find matching recipes based on ingredients
+    function findRecipes(availableIngredients) {
+      const availableSet = new Set(availableIngredients.map(normalize));
+      // Match recipe if ALL recipe ingredients are in availableSet (relaxed: allow if at least half ingredients match)
+      return recipes.filter(recipe => {
+        let matchedCount = 0;
+        for (const ing of recipe.ingredients) {
+          if (availableSet.has(normalize(ing))) matchedCount++;
+        }
+        // Require at least half ingredients to be available
+        return matchedCount >= Math.ceil(recipe.ingredients.length / 2);
+      });
     }
-  ];
-  localStorage.setItem('recipes_vgen', JSON.stringify(recipes));
-}
-function saveAll(){ localStorage.setItem('recipes_vgen', JSON.stringify(recipes)); }
 
-/* Rendering & UI */
-const recipesListEl = document.getElementById('recipesList'), searchEl = document.getElementById('search');
+    // Render recipes list
+    function renderRecipes(recipesToShow) {
+      favoritesDiv.style.display = 'none';
+      recipesDiv.style.display = 'block';
+      portionControl.style.display = recipesToShow.length ? 'block' : 'none';
 
-function renderRecipes(){
-  const q = (searchEl.value||'').toLowerCase();
-  recipesListEl.innerHTML = '';
-  if (!recipes.length) { recipesListEl.innerHTML = '<div class="muted">No saved recipes</div>'; return; }
-  recipes.forEach((r, idx)=>{
-    if (q && !r.name.toLowerCase().includes(q)) return;
-    const el = document.createElement('div'); el.className='recipe-card';
-    const ingrDisplay = r.ingredients.map(l=>formatIngredientForDisplay(l,1)).join('<br>');
-    const stepsPreview = r.instructions.map(s=> s.step + (s.time? ` [${s.time}m]` : '')).join('<br>');
-    el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
-      <strong>${r.name}</strong>
-      <div class="flex">
-        <button class="small-btn" onclick="openCook(${idx})">Cook</button>
-        <button class="small-btn" onclick="openShop(${idx})">Shop</button>
-        <button class="small-btn" onclick="editRecipe(${idx})">Edit</button>
-        <button class="small-btn" onclick="deleteRecipe(${idx})">Delete</button>
-        <button class="small-btn" onclick="printRecipe(${idx})">Print</button>
-      </div>
-    </div>
-    <div style="margin-top:8px" class="muted"><strong>Serves:</strong> ${r.servings} • <strong>Ingredients:</strong><br>${ingrDisplay}</div>
-    <div style="margin-top:8px" class="muted"><strong>Steps:</strong><br>${stepsPreview}</div>`;
-    recipesListEl.appendChild(el);
-  });
-}
+      if (!recipesToShow.length) {
+        recipesDiv.innerHTML = '<p>No recipes match your ingredients.</p>';
+        return;
+      }
 
-/* Save recipe */
-document.getElementById('saveBtn').addEventListener('click', ()=>{
-  const name = (document.getElementById('recipeName').value||'').trim();
-  const servings = Number(document.getElementById('baseServings').value) || 1;
-  const ingrText = (document.getElementById('ingredients').value||'').trim();
-  const instText = (document.getElementById('instructions').value||'').trim();
-  if (!name || !ingrText || !instText){ alert('Fill name, servings, ingredients and instructions.'); return; }
-  const ingredientLines = ingrText.split('\n').map(l=>l.trim()).filter(Boolean);
-  const instructions = instText.split('\n').map(line=>{
-    const tm = line.match(/\[(\d+)m\]/);
-    const time = tm ? parseInt(tm[1],10) : 0;
-    return { step: line.replace(/\[\d+m\]/,'').trim(), time };
-  });
-  const shoppingList = ingredientLines.map(it=>({ item: it, checked: false }));
-  const recipe = { name, servings, ingredients: ingredientLines, instructions, shoppingList, created: Date.now() };
-  const existing = recipes.findIndex(x=>x.name.toLowerCase()===name.toLowerCase());
-  if (existing>=0) recipes[existing]=recipe; else recipes.unshift(recipe);
-  saveAll(); clearForm(); renderRecipes(); computeAndShowNutrition(recipe);
-});
-function clearForm(){ document.getElementById('recipeName').value=''; document.getElementById('baseServings').value='1'; document.getElementById('ingredients').value=''; document.getElementById('instructions').value=''; document.getElementById('generatedArea').classList.add('hidden'); }
-function editRecipe(i){
-  const r = recipes[i]; if(!r) return;
-  document.getElementById('recipeName').value = r.name;
-  document.getElementById('baseServings').value = r.servings||1;
-  document.getElementById('ingredients').value = r.ingredients.join('\n');
-  document.getElementById('instructions').value = r.instructions.map(s=> s.step + (s.time?` [${s.time}m]`:'')).join('\n');
-  window.scrollTo({top:0,behavior:'smooth'});
-}
-function deleteRecipe(i){ if(!confirm('Delete recipe?')) return; recipes.splice(i,1); saveAll(); renderRecipes(); }
-document.getElementById('clearAllBtn').addEventListener('click', ()=>{ if(!confirm('Delete ALL recipes?')) return; recipes=[]; saveAll(); renderRecipes(); });
-document.getElementById('refreshBtn').addEventListener('click', renderRecipes);
+      let html = '';
+      recipesToShow.forEach(recipe => {
+        const servings = currentPortion;
+        const scale = servings / recipe.servings;
 
-/* Per-recipe edit */
-function openRecipeDetails(i){
-  const r = recipes[i]; if(!r) return;
-  const box = document.getElementById('shopItems'); box.innerHTML = '';
-  const title = document.getElementById('shopTitle'); title.textContent = r.name + ' — Details (Edit ingredients)';
-  r.ingredients.forEach((line, idx)=>{
-    const p = parseIngredientLine(line);
-    const div = document.createElement('div'); div.style.marginBottom='8px';
-    const display = document.createElement('div'); display.className='muted'; display.textContent = line;
-    const editRow = document.createElement('div'); editRow.className='inline-edit';
-    const qtyInput = document.createElement('input'); qtyInput.type='text'; qtyInput.value = p && p.quantity ? (p.quantity_unit==='g'||p.quantity_unit==='ml' ? Math.round(p.quantity) : p.quantity) : '';
-    qtyInput.placeholder = p && p.quantity ? '' : 'qty';
-    const unitSelect = document.createElement('select'); unitSelect.className='unit-select';
-    ['g','ml','oz','cup','tbsp','tsp','unit'].forEach(u=>{ const opt=document.createElement('option'); opt.value=u; opt.textContent=u; unitSelect.appendChild(opt); });
-    if (p && p.quantity_unit === 'g') unitSelect.value = 'g';
-    else if (p && p.quantity_unit === 'ml') unitSelect.value = 'ml';
-    else unitSelect.value = 'g';
-    const nameInput = document.createElement('input'); nameInput.type='text'; nameInput.value = p ? p.name : line; nameInput.style.width='200px';
-    const updateBtn = document.createElement('button'); updateBtn.textContent='Update'; updateBtn.className='small-btn';
-    updateBtn.addEventListener('click', ()=>{
-      const newQtyRaw = qtyInput.value.trim();
-      const chosenUnit = unitSelect.value;
-      const newName = nameInput.value.trim();
-      if (!newQtyRaw || !newName){ alert('Enter quantity and name'); return; }
-      const newLine = `${newQtyRaw} ${chosenUnit} ${newName}`;
-      r.ingredients[idx] = newLine;
-      if (r.shoppingList && r.shoppingList[idx]) r.shoppingList[idx].item = newLine;
-      saveAll();
-      openRecipeDetails(i);
-      computeAndShowNutrition(r);
-      renderRecipes();
+        // Scale ingredients
+        const scaledIngredients = recipe.ingredients.map(ing => {
+          // Since no quantities in sample data, just display ingredient name
+          return ing;
+        });
+
+        // Check if favorite
+        const favs = getFavorites();
+        const isFav = favs.some(f => f.id === recipe.id);
+
+        html += `
+          <div class="recipe-item" tabindex="0" aria-label="Recipe: ${recipe.name}">
+            <h3>${recipe.name}</h3>
+            <strong>Ingredients:</strong>
+            <ul class="ingredients-list">${scaledIngredients.map(ing => `<li>${ing}</li>`).join('')}</ul>
+            <strong>Instructions:</strong>
+            <p class="instructions">${recipe.instructions}</p>
+            <p><em>Servings: ${servings}</em></p>
+            <button aria-pressed="${isFav}" class="fav-btn" data-id="${recipe.id}" aria-label="${isFav ? 'Remove from favorites' : 'Add to favorites'}">
+              ${isFav ? '★ Remove Favorite' : '☆ Add to Favorites'}
+            </button>
+          </div>
+        `;
+      });
+
+      recipesDiv.innerHTML = html;
+
+      // Attach event handlers to favorite buttons
+      document.querySelectorAll('.fav-btn').forEach(btn => {
+        btn.onclick = () => {
+          const id = Number(btn.getAttribute('data-id'));
+          toggleFavorite(id);
+          renderRecipes(currentRecipes); // Re-render to update favorite buttons
+        };
+      });
+    }
+
+    // Render favorites list
+    function renderFavorites() {
+      recipesDiv.style.display = 'none';
+      portionControl.style.display = 'none';
+      favoritesDiv.style.display = 'block';
+
+      const favs = getFavorites();
+
+      if (!favs.length) {
+        favoritesDiv.innerHTML = '<p>You have no favorite recipes saved.</p>';
+        return;
+      }
+
+      let html = '<h2>Your Favorites</h2>';
+      favs.forEach(recipe => {
+        html += `
+          <div class="recipe-item" tabindex="0" aria-label="Favorite Recipe: ${recipe.name}">
+            <h3>${recipe.name}</h3>
+            <strong>Ingredients:</strong>
+            <ul class="ingredients-list">${recipe.ingredients.map(ing => `<li>${ing}</li>`).join('')}</ul>
+            <strong>Instructions:</strong>
+            <p class="instructions">${recipe.instructions}</p>
+            <p><em>Servings: ${recipe.servings}</em></p>
+            <button aria-pressed="true" class="fav-btn" data-id="${recipe.id}" aria-label="Remove from favorites">
+              ★ Remove Favorite
+            </button>
+          </div>
+        `;
+      });
+
+      favoritesDiv.innerHTML = html;
+
+      // Attach event handlers to remove favorite buttons
+      document.querySelectorAll('.fav-btn').forEach(btn => {
+        btn.onclick = () => {
+          const id = Number(btn.getAttribute('data-id'));
+          toggleFavorite(id);
+          renderFavorites(); // Re-render favorites
+        };
+      });
+    }
+
+    // Local Storage favorites management
+    function getFavorites() {
+      try {
+        const favs = localStorage.getItem('recipeFavorites');
+        if (favs) return JSON.parse(favs);
+      } catch {
+        return [];
+      }
+      return [];
+    }
+    function saveFavorites(favs) {
+      localStorage.setItem('recipeFavorites', JSON.stringify(favs));
+    }
+    function toggleFavorite(id) {
+      const favs = getFavorites();
+      const index = favs.findIndex(r => r.id === id);
+      if (index > -1) {
+        favs.splice(index, 1);
+      } else {
+        const recipe = recipes.find(r => r.id === id);
+        if (recipe) favs.push(recipe);
+      }
+      saveFavorites(favs);
+    }
+
+    // Event handlers
+    generateBtn.addEventListener('click', () => {
+      const input = ingredientsInput.value;
+      if (!input.trim()) {
+        alert('Please enter some ingredients first.');
+        return;
+      }
+      const inputIngredients = input.split(',').map(i => i.trim()).filter(Boolean);
+      currentRecipes = findRecipes(inputIngredients);
+      currentPortion = 1;
+      portionInput.value = 1;
+      showingFavorites = false;
+      renderRecipes(currentRecipes);
     });
-    editRow.appendChild(qtyInput); editRow.appendChild(unitSelect); editRow.appendChild(nameInput); editRow.appendChild(updateBtn);
-    div.appendChild(display); div.appendChild(editRow);
-    box.appendChild(div);
-  });
-  const done = document.createElement('div'); done.style.marginTop='8px';
-  const closeBtn = document.createElement('button'); closeBtn.textContent='Done'; closeBtn.className='small-btn';
-  closeBtn.addEventListener('click', ()=> document.getElementById('shopPanel').classList.add('hidden'));
-  done.appendChild(closeBtn);
-  box.appendChild(done);
-  document.getElementById('shopPanel').classList.remove('hidden');
-}
 
-/* Shop panel */
-function openShop(i){
-  const r = recipes[i]; if(!r) return;
-  document.getElementById('shopTitle').textContent = r.name + ' — Shopping';
-  const box = document.getElementById('shopItems'); box.innerHTML = '';
-  r.shoppingList.forEach((it, idx)=>{
-    const div = document.createElement('div'); div.className='shopping-item';
-    const cb = document.createElement('input'); cb.type='checkbox'; cb.checked = !!it.checked;
-    cb.addEventListener('change', ()=>{ r.shoppingList[idx].checked = cb.checked; saveAll(); });
-    const txt = document.createElement('div'); txt.textContent = it.item;
-    div.appendChild(cb); div.appendChild(txt); box.appendChild(div);
-  });
-  const editBtn = document.createElement('button'); editBtn.textContent='Edit Ingredients'; editBtn.className='small-btn'; editBtn.style.marginTop='8px';
-  editBtn.addEventListener('click', ()=> openRecipeDetails(findRecipeIndexByName(r.name)));
-  box.appendChild(editBtn);
-  document.getElementById('shopPanel').classList.remove('hidden');
-}
-document.getElementById('closeShopBtn').addEventListener('click', ()=> document.getElementById('shopPanel').classList.add('hidden'));
-document.getElementById('clearShopBtn').addEventListener('click', ()=>{
-  const title = document.getElementById('shopTitle').textContent; const name = title.replace(' — Shopping','');
-  const idx = recipes.findIndex(x=>x.name===name); if (idx<0) return;
-  recipes[idx].shoppingList = recipes[idx].shoppingList.filter(it=>!it.checked); saveAll(); openShop(idx); renderRecipes();
-});
-function findRecipeIndexByName(name){ return recipes.findIndex(x=>x.name===name); }
+    portionInput.addEventListener('input', () => {
+      let val = Number(portionInput.value);
+      if (isNaN(val) || val < 1) {
+        val = 1;
+        portionInput.value = 1;
+      }
+      currentPortion = val;
+      if (!showingFavorites) renderRecipes(currentRecipes);
+    });
 
-/* Nutrition calculation & per-step attribution */
-function computeNutritionForRecipe(recipe){
-  const totals={cal:0,protein:0,carbs:0,fat:0};
-  const parsed = recipe.ingredients.map(line=>parseIngredientLine(line));
-  const perIngredient = parsed.map(p=>{
-    if (!p || !p.quantity) return {p,cal:0,protein:0,carbs:0,fat:0,matched:false};
-    const key = matchNutritionKey(p.name);
-    if (!key) return {p,cal:0,protein:0,carbs:0,fat:0,matched:false};
-    const db = BIG_NUTRITION_DB[key];
-    if (!db) return {p,cal:0,protein:0,carbs:0,fat:0,matched:false};
-    let grams = p.quantity;
-    if (p.quantity_unit === 'ml') grams = p.quantity; // approximate 1ml=1g for many liquids
-    const factor = grams/100;
-    const cal = (db.cal||0)*factor;
-    const protein = (db.protein||0)*factor;
-    const carbs = (db.carbs||0)*factor;
-    const fat = (db.fat||0)*factor;
-    totals.cal += cal; totals.protein += protein; totals.carbs += carbs; totals.fat += fat;
-    return {p,cal,protein,carbs,fat,matched:true,dbKey:key};
-  });
-  totals.cal = Math.round(totals.cal);
-  totals.protein = Math.round(totals.protein*10)/10;
-  totals.carbs = Math.round(totals.carbs*10)/10;
-  totals.fat = Math.round(totals.fat*10)/10;
-  return {totals, perIngredient};
-}
+    showFavBtn.addEventListener('click', () => {
+      showingFavorites = !showingFavorites;
+      if (showingFavorites) {
+        showFavBtn.textContent = 'Show Recipes';
+        renderFavorites();
+      } else {
+        showFavBtn.textContent = 'Show Favorites';
+        renderRecipes(currentRecipes);
+      }
+    });
 
-function computePerRecipeNutritionMap(recipe){
-  const info = computeNutritionForRecipe(recipe);
-  const perIng = info.perIngredient;
-  const stepsCount = Math.max(1, recipe.instructions.length);
-  const perStep = Array.from({length:stepsCount}, ()=>({cal:0,protein:0,carbs:0,fat:0}));
-  perIng.forEach(ingObj=>{
-    if (!ingObj || (!ingObj.cal && !ingObj.protein && !ingObj.carbs && !ingObj.fat)) return;
-    let matched=false;
-    if (ingObj.dbKey){
-      for (let s=0;s<stepsCount;s++){
-        const stepText = (recipe.instructions[s].step||'').toLowerCase();
-        if (stepText.includes(ingObj.dbKey)){ perStep[s].cal+=ingObj.cal; perStep[s].protein+=ingObj.protein; perStep[s].carbs+=ingObj.carbs; perStep[s].fat+=ingObj.fat; matched=true; break; }
+    // Dark mode toggle & persistence
+    function loadDarkMode() {
+      const saved = localStorage.getItem('darkModeEnabled');
+      if (saved === 'true') {
+        document.body.classList.add('dark');
+        darkModeToggle.checked = true;
+      } else {
+        document.body.classList.remove('dark');
+        darkModeToggle.checked = false;
       }
     }
-    if (!matched){
-      const nameLower = (ingObj.p.name||'').toLowerCase();
-      const first = nameLower.split(' ')[0];
-      for (let s=0;s<stepsCount;s++){
-        if ((recipe.instructions[s].step||'').toLowerCase().includes(first)){ perStep[s].cal+=ingObj.cal; perStep[s].protein+=ingObj.protein; perStep[s].carbs+=ingObj.carbs; perStep[s].fat+=ingObj.fat; matched=true; break; }
+    darkModeToggle.addEventListener('change', () => {
+      if (darkModeToggle.checked) {
+        document.body.classList.add('dark');
+        localStorage.setItem('darkModeEnabled', 'true');
+      } else {
+        document.body.classList.remove('dark');
+        localStorage.setItem('darkModeEnabled', 'false');
       }
-    }
-    ingObj.matched = matched;
-  });
-  const unmatched = perIng.filter(i=>i && !i.matched && (i.cal||i.protein||i.carbs||i.fat));
-  if (unmatched.length){
-    const sum = unmatched.reduce((acc,i)=>{ acc.cal+=i.cal; acc.protein+=i.protein; acc.carbs+=i.carbs; acc.fat+=i.fat; return acc; }, {cal:0,protein:0,carbs:0,fat:0});
-    const each = {cal: sum.cal/stepsCount, protein: sum.protein/stepsCount, carbs: sum.carbs/stepsCount, fat: sum.fat/stepsCount};
-    for (let s=0;s<stepsCount;s++){
-      perStep[s].cal += each.cal; perStep[s].protein += Math.round(each.protein*10)/10; perStep[s].carbs += Math.round(each.carbs*10)/10; perStep[s].fat += Math.round(each.fat*10)/10;
-    }
-  }
-  for (let s=0;s<perStep.length;s++){
-    perStep[s].cal = Math.round(perStep[s].cal);
-    perStep[s].protein = Math.round(perStep[s].protein*10)/10;
-    perStep[s].carbs = Math.round(perStep[s].carbs*10)/10;
-    perStep[s].fat = Math.round(perStep[s].fat*10)/10;
-  }
-  recipe._perStepNutrition = perStep;
-  recipe._nutritionTotals = info.totals;
-  return {perStep, totals: info.totals};
-}
+    });
 
-/* compute & show for currently built recipe (with scaling) */
-function computeAndShowNutrition(recipeObj){
-  const info = computePerRecipeNutritionMap(recipeObj);
-  document.getElementById('generatedArea').classList.remove('hidden');
-  const displayServ = Number(document.getElementById('displayServings').value) || recipeObj.servings || 1;
-  const scale = displayServ / (recipeObj.servings || 1);
-  const totalsScaled = { cal: Math.round(info.totals.cal*scale), protein: Math.round(info.totals.protein*10*scale)/10, carbs: Math.round(info.totals.carbs*10*scale)/10, fat: Math.round(info.totals.fat*10*scale)/10 };
-  document.getElementById('nutritionSummary').textContent = `Totals (scaled): ${totalsScaled.cal} kcal • P ${totalsScaled.protein} g • C ${totalsScaled.carbs} g • F ${totalsScaled.fat} g`;
-  const perStepDiv = document.getElementById('perStepNutrition'); perStepDiv.innerHTML='';
-  info.perStep.forEach((sNut, idx)=>{
-    const sScaled = { cal: Math.round(sNut.cal*scale), protein: Math.round(sNut.protein*10*scale)/10, carbs: Math.round(sNut.carbs*10*scale)/10, fat: Math.round(sNut.fat*10*scale)/10 };
-    const div = document.createElement('div'); div.innerHTML = `<div style="margin-bottom:4px;"><strong>Step ${idx+1}:</strong> ${recipeObj.instructions[idx].step} ${recipeObj.instructions[idx].time?`[${recipeObj.instructions[idx].time}m]`:''}</div><div class="step-nut">Estimated (scaled): ${sScaled.cal} kcal • P ${sScaled.protein} g • C ${sScaled.carbs} g • F ${sScaled.fat} g</div>`;
-    perStepDiv.appendChild(div);
-  });
-}
+    // Initialize
+    loadDarkMode();
 
-/* Update when displayServings changes */
-document.getElementById('displayServings').addEventListener('input', ()=>{
-  const name = (document.getElementById('recipeName').value||'Preview').trim();
-  const ingredientLines = (document.getElementById('ingredients').value||'').trim().split('\n').map(l=>l.trim()).filter(Boolean);
-  const instLines = (document.getElementById('instructions').value||'').trim().split('\n').map(line=>{ const tm=line.match(/\[(\d+)m\]/); return {step: line.replace(/\[\d+m\]/,'').trim(), time: tm?parseInt(tm[1],10):0}; });
-  if (!ingredientLines.length || !instLines.length) return;
-  const preview = { name, servings: Number(document.getElementById('baseServings').value)||1, ingredients: ingredientLines, instructions: instLines };
-  computeAndShowNutrition(preview);
-});
-
-/* Cook Mode */
-let cookIndex=null, stepIndex=0, stepTimer=null, remainingSec=0;
-const cookPanel = document.getElementById('cookPanel');
-
-function openCook(i){
-  cookIndex=i; stepIndex=0; showCookStep(); cookPanel.classList.remove('hidden'); cookPanel.scrollIntoView({behavior:'smooth'});
-}
-function showCookStep(){
-  clearInterval(stepTimer);
-  if (cookIndex==null) return;
-  const recipe = recipes[cookIndex];
-  const inst = recipe.instructions[stepIndex];
-  document.getElementById('cookTitle').textContent = recipe.name;
-  document.getElementById('cookProgress').textContent = `Step ${stepIndex+1} / ${recipe.instructions.length}`;
-  document.getElementById('stepText').textContent = inst.step;
-  computePerRecipeNutritionMap(recipe);
-  const displayServ = Number(document.getElementById('displayServings').value) || recipe.servings || 1;
-  const scale = displayServ / (recipe.servings || 1);
-  const perStep = (recipe._perStepNutrition && recipe._perStepNutrition[stepIndex]) || {cal:0,protein:0,carbs:0,fat:0};
-  const perStepScaled = { cal: Math.round(perStep.cal*scale), protein: Math.round(perStep.protein*10*scale)/10, carbs: Math.round(perStep.carbs*10*scale)/10, fat: Math.round(perStep.fat*10*scale)/10 };
-  document.getElementById('stepNutritionText').textContent = `This step (scaled): ${perStepScaled.cal} kcal • P ${perStepScaled.protein} g • C ${perStepScaled.carbs} g • F ${perStepScaled.fat} g`;
-  if (inst.time && inst.time>0){
-    remainingSec = inst.time * 60; updateTimerText();
-    stepTimer = setInterval(()=>{ remainingSec--; updateTimerText(); if (remainingSec<=0){ clearInterval(stepTimer); alert('Timer done: ' + inst.step); } },1000);
-  } else { document.getElementById('timerText').textContent = ''; }
-}
-function updateTimerText(){ const m=Math.floor(remainingSec/60), s=remainingSec%60; document.getElementById('timerText').textContent = `Time left: ${m}:${s.toString().padStart(2,'0')}`; }
-document.getElementById('nextStepBtn').addEventListener('click', ()=>{ if(cookIndex==null) return; if(stepIndex<recipes[cookIndex].instructions.length-1){ stepIndex++; showCookStep(); } else { alert('Recipe complete!'); closeCook(); } });
-document.getElementById('prevStepBtn').addEventListener('click', ()=>{ if(cookIndex==null) return; if(stepIndex>0){ stepIndex--; showCookStep(); } });
-document.getElementById('stopCookBtn').addEventListener('click', closeCook);
-function closeCook(){ clearInterval(stepTimer); cookIndex=null; stepIndex=0; cookPanel.classList.add('hidden'); }
-
-/* Printing */
-function buildRecipeHTMLForPrint(r, displayServings){
-  const scale = (displayServings || r.servings) / (r.servings || 1);
-  const ingredientsHTML = r.ingredients.map(line => `<li>${formatIngredientForDisplay(line, scale)}</li>`).join('');
-  const stepsHTML = r.instructions.map(s => `<li>${s.step}${s.time?` — ${s.time} min`:''}</li>`).join('');
-  const nutrition = computePerRecipeNutritionMap(r).totals;
-  const nutritionScaled = { cal: Math.round(nutrition.cal*scale), protein: Math.round(nutrition.protein*10*scale)/10, carbs: Math.round(nutrition.carbs*10*scale)/10, fat: Math.round(nutrition.fat*10*scale)/10 };
-  const nutritionHTML = `<p>Calories: ${nutritionScaled.cal} kcal • Protein: ${nutritionScaled.protein} g • Carbs: ${nutritionScaled.carbs} g • Fat: ${nutritionScaled.fat} g</p>`;
-  return `<div style="font-family:Arial;color:#111"><h1>${r.name}</h1>
-    <p><strong>Serves:</strong> ${displayServings || r.servings}</p>
-    ${nutritionHTML}
-    <h3>Ingredients</h3><ul>${ingredientsHTML}</ul>
-    <h3>Steps</h3><ol>${stepsHTML}</ol>
-    </div>`;
-}
-function printRecipe(i){
-  const r = recipes[i]; if(!r) return;
-  const displayServ = Number(document.getElementById('displayServings').value) || r.servings || 1;
-  document.getElementById('printContent').innerHTML = buildRecipeHTMLForPrint(r, displayServ);
-  document.getElementById('printView').classList.remove('hidden');
-  setTimeout(()=>{ window.print(); document.getElementById('printView').classList.add('hidden'); },250);
-}
-document.getElementById('printRecipeBtn').addEventListener('click', ()=>{
-  const name = (document.getElementById('recipeName').value||'Preview').trim();
-  const ingredientLines = (document.getElementById('ingredients').value||'').trim().split('\n').filter(Boolean);
-  const instLines = (document.getElementById('instructions').value||'').trim().split('\n').filter(Boolean).map(line=>{ const tm=line.match(/\[(\d+)m\]/); return {step:line.replace(/\[\d+m\]/,'').trim(), time: tm?parseInt(tm[1],10):0}; });
-  const preview = { name, servings: Number(document.getElementById('baseServings').value)||1, ingredients: ingredientLines, instructions:instLines };
-  document.getElementById('printContent').innerHTML = buildRecipeHTMLForPrint(preview, Number(document.getElementById('displayServings').value) || preview.servings);
-  document.getElementById('printView').classList.remove('hidden');
-  setTimeout(()=>{ window.print(); document.getElementById('printView').classList.add('hidden'); },250);
-});
-
-/* UI bindings */
-document.getElementById('toggleUnitsBtn').addEventListener('click', ()=>{ UNIT_SYSTEM = (UNIT_SYSTEM==='metric'?'imperial':'metric'); setUnitSystem(UNIT_SYSTEM); });
-document.getElementById('search').addEventListener('input', renderRecipes);
-document.getElementById('refreshBtn').addEventListener('click', renderRecipes);
-document.getElementById('randomSuggest').addEventListener('click', ()=>{ if(!recipes.length) return alert('No recipes'); const r=recipes[Math.floor(Math.random()*recipes.length)]; alert('Try: '+r.name); });
-document.getElementById('importSample').addEventListener('click', ()=>{ const sample={ name:'Quick Veg Stir', servings:2, ingredients:['150 g broccoli','100 g carrot','15 ml soy sauce','10 ml olive oil'], instructions:[{step:'Chop veg',time:0},{step:'Stir fry',time:6}], shoppingList:[{item:'150 g broccoli',checked:false},{item:'100 g carrot',checked:false}], created:Date.now() }; recipes.unshift(sample); saveAll(); renderRecipes(); });
-
-/* expose functions for inline onclicks */
-window.openCook = openCook; window.openShop = openShop; window.editRecipe = editRecipe; window.deleteRecipe = deleteRecipe; window.printRecipe = printRecipe; window.openRecipeDetails = openRecipeDetails;
-
-/* init */
-setUnitSystem(UNIT_SYSTEM);
-renderRecipes();
-
-/* Accessibility: Esc stops cook mode timer & closes overlays (if any) */
-document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape'){ closeCook(); } });
-
+  })();
 </script>
 </body>
 </html>
