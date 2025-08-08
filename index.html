@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Advanced Recipe Generator</title>
+<title>Pro Recipe Generator</title>
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -45,16 +45,8 @@
     button:hover {
         background: #45a049;
     }
-    ul {
-        list-style: none;
-        padding: 0;
-    }
-    li {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.5rem;
-        border-bottom: 1px solid #ddd;
+    ul, ol {
+        padding-left: 1.5rem;
     }
     li.checked {
         text-decoration: line-through;
@@ -65,15 +57,17 @@
         display: flex;
         gap: 0.5rem;
     }
-    @media (max-width: 600px) {
-        h2 { font-size: 1.2rem; }
+    .flex-btn {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
     }
 </style>
 </head>
 <body>
 
 <header>
-    <h1>Advanced Recipe Generator</h1>
+    <h1>Pro Recipe Generator</h1>
 </header>
 
 <main>
@@ -87,14 +81,21 @@
     <section id="recipeSection" style="display:none;">
         <h2>Recipe</h2>
         <p id="recipeTitle"></p>
-        <h3>Ingredients:</h3>
+        <p><strong>Total Cooking Time:</strong> <span id="totalTime"></span> minutes</p>
+
+        <h3>Ingredients (Metric):</h3>
         <ul id="ingredientList"></ul>
 
-        <h3>Steps:</h3>
+        <h3>Cooking Procedure:</h3>
         <ol id="stepsList"></ol>
 
         <h3>Nutrition Estimates (approx):</h3>
         <p id="nutritionInfo"></p>
+
+        <div class="flex-btn">
+            <button onclick="saveRecipe()">💾 Save</button>
+            <button onclick="clearRecipe()">🗑 Clear</button>
+        </div>
     </section>
 
     <section id="shoppingListSection" style="display:none;">
@@ -113,6 +114,14 @@ const nutritionDB = {
     milk: {cal:42, protein:3.4, carbs:5, fat:1}
 };
 
+function randomGrams() {
+    return Math.floor(Math.random() * 200) + 50; // 50–250g
+}
+
+function estimateCookingTime(ingredientCount) {
+    return ingredientCount * 5 + 15; // Simple estimation
+}
+
 function generateRecipe() {
     const input = document.getElementById("ingredientInput").value.trim();
     if (!input) return alert("Please enter ingredients.");
@@ -123,37 +132,32 @@ function generateRecipe() {
 
     document.getElementById("recipeTitle").textContent = "Delicious Dish with " + ingredients.join(", ");
 
-    // Ingredient list
+    // Total time
+    const totalTime = estimateCookingTime(ingredients.length);
+    document.getElementById("totalTime").textContent = totalTime;
+
+    // Ingredient list with metric measurements
     const ingList = document.getElementById("ingredientList");
     ingList.innerHTML = "";
+    const measuredIngredients = [];
     ingredients.forEach(ing=>{
+        const grams = randomGrams();
         const li = document.createElement("li");
-        li.textContent = ing;
+        li.textContent = `${ing} - ${grams} g`;
+        measuredIngredients.push({name: ing, grams});
         ingList.appendChild(li);
     });
 
-    // Steps with timers
-    const steps = [
-        "Prepare all ingredients",
-        "Cook main ingredient",
-        "Add spices and mix",
-        "Serve hot"
-    ];
+    // Cooking procedure
     const stepsList = document.getElementById("stepsList");
     stepsList.innerHTML = "";
-    steps.forEach((step, idx)=>{
-        const li = document.createElement("li");
-        li.innerHTML = `
-            ${step}
-            <div class="timer">
-                <span id="timer${idx}">00:00</span>
-                <button onclick="startTimer(${idx})">Start</button>
-                <button onclick="pauseTimer(${idx})">Pause</button>
-                <button onclick="resetTimer(${idx})">Reset</button>
-            </div>
-        `;
-        stepsList.appendChild(li);
-    });
+    stepsList.innerHTML = `
+        <li>Wash and prepare all ingredients.</li>
+        <li>Heat oil in a pan and add ${ingredients[0] || 'main ingredient'}.</li>
+        <li>Add remaining ingredients and stir well.</li>
+        <li>Cook for ${totalTime} minutes or until done.</li>
+        <li>Serve hot and enjoy!</li>
+    `;
 
     // Shopping list
     const shopList = document.getElementById("shoppingList");
@@ -177,38 +181,34 @@ function generateRecipe() {
     });
     document.getElementById("nutritionInfo").textContent =
         `${total.cal} kcal | Protein: ${total.protein}g | Carbs: ${total.carbs}g | Fat: ${total.fat}g`;
+
+    // Save current recipe to memory
+    currentRecipe = {
+        title: document.getElementById("recipeTitle").textContent,
+        totalTime,
+        ingredients: measuredIngredients,
+        steps: Array.from(stepsList.querySelectorAll("li")).map(li => li.textContent),
+        nutrition: total
+    };
 }
 
-// Timer logic
-let timers = {};
-function startTimer(id) {
-    if (!timers[id]) timers[id] = {seconds:0, running:false, interval:null};
-    if (timers[id].running) return;
-    timers[id].running = true;
-    timers[id].interval = setInterval(()=>{
-        timers[id].seconds++;
-        updateTimerDisplay(id);
-    },1000);
+let currentRecipe = null;
+
+function saveRecipe() {
+    if (!currentRecipe) return alert("No recipe to save.");
+    const saved = JSON.parse(localStorage.getItem("savedRecipes") || "[]");
+    saved.push(currentRecipe);
+    localStorage.setItem("savedRecipes", JSON.stringify(saved));
+    alert("Recipe saved locally!");
 }
-function pauseTimer(id) {
-    if (timers[id]) {
-        timers[id].running = false;
-        clearInterval(timers[id].interval);
-    }
-}
-function resetTimer(id) {
-    if (timers[id]) {
-        pauseTimer(id);
-        timers[id].seconds = 0;
-        updateTimerDisplay(id);
-    }
-}
-function updateTimerDisplay(id) {
-    const sec = timers[id].seconds;
-    const m = String(Math.floor(sec/60)).padStart(2,'0');
-    const s = String(sec%60).padStart(2,'0');
-    document.getElementById("timer"+id).textContent = `${m}:${s}`;
+
+function clearRecipe() {
+    document.getElementById("recipeSection").style.display = "none";
+    document.getElementById("shoppingListSection").style.display = "none";
+    document.getElementById("ingredientInput").value = "";
+    currentRecipe = null;
 }
 </script>
+
 </body>
 </html>
