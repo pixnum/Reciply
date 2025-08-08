@@ -1,214 +1,550 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pro Recipe Generator</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Recipe Generator — Servings + Better Matching (v4)</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        background: #f5f5f5;
-        color: #333;
-    }
-    header {
-        background: #4CAF50;
-        color: white;
-        padding: 1rem;
-        text-align: center;
-    }
-    main {
-        padding: 1rem;
-        max-width: 900px;
-        margin: auto;
-    }
-    section {
-        background: white;
-        padding: 1rem;
-        border-radius: 8px;
-        margin-bottom: 1rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    input, button, textarea {
-        padding: 0.5rem;
-        margin: 0.25rem 0;
-        width: 100%;
-        box-sizing: border-box;
-    }
-    button {
-        background: #4CAF50;
-        color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 4px;
-    }
-    button:hover {
-        background: #45a049;
-    }
-    ul, ol {
-        padding-left: 1.5rem;
-    }
-    li.checked {
-        text-decoration: line-through;
-        color: gray;
-    }
-    .timer {
-        margin-top: 0.5rem;
-        display: flex;
-        gap: 0.5rem;
-    }
-    .flex-btn {
-        display: flex;
-        gap: 0.5rem;
-        margin-top: 0.5rem;
-    }
+  :root{--accent:#ff7043;--bg:#f7f7f8;--card:#fff;--muted:#6b7280}
+  *{box-sizing:border-box}
+  body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);margin:0;color:#111}
+  header{background:var(--accent);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+  header h1{margin:0;font-size:18px}
+  header .actions{display:flex;gap:8px;align-items:center}
+  main{max-width:1000px;margin:18px auto;padding:12px}
+  .grid{display:grid;grid-template-columns:1fr 380px;gap:16px}
+  @media(max-width:980px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);padding:12px;border-radius:10px;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
+  label{font-size:13px;color:var(--muted);display:block;margin-top:8px}
+  input,textarea,select,button{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)}
+  textarea{min-height:90px;resize:vertical}
+  button{background:var(--accent);color:#fff;border:none;cursor:pointer}
+  .small-btn{background:#fff;color:var(--accent);border:1px solid rgba(0,0,0,0.06);padding:8px;border-radius:8px;cursor:pointer}
+  .muted{color:var(--muted);font-size:13px}
+  .recipe-card{border:1px solid rgba(0,0,0,0.06);padding:10px;border-radius:8px;margin-bottom:8px}
+  .flex{display:flex;gap:8px;align-items:center}
+  .hidden{display:none}
+  .shopping-item{display:flex;align-items:center;gap:8px;padding:6px 0}
+  .nutrition-line{font-size:13px;color:#333;margin-top:6px}
+  .step-nut{font-size:13px;color:var(--muted)}
+  .print-only{display:none}
+  .small-input{width:120px;padding:8px;border-radius:6px}
+  @media print{body *{visibility:hidden} .print-only, .print-only *{visibility:visible} .print-only{position:fixed;left:0;top:0;width:100%}}
 </style>
 </head>
 <body>
-
 <header>
-    <h1>Pro Recipe Generator</h1>
+  <h1>Recipe Generator — v4</h1>
+  <div class="actions">
+    <div id="regionLabel" class="muted">Unit: Metric</div>
+    <button id="toggleUnitsBtn" class="small-btn" title="Toggle units">Toggle Units</button>
+    <button id="exportBtn" class="small-btn">Export JSON</button>
+    <button id="importBtn" class="small-btn">Import JSON</button>
+    <input id="fileIn" type="file" accept="application/json" style="display:none">
+  </div>
 </header>
 
 <main>
-    <section>
-        <h2>Generate a Recipe</h2>
-        <label>Enter Ingredients (comma separated):</label>
-        <input type="text" id="ingredientInput" placeholder="e.g. chicken, rice, tomato">
-        <button onclick="generateRecipe()">Generate Recipe</button>
-    </section>
+  <div class="grid">
+    <section class="card">
+      <h2 style="margin:0 0 8px 0">Create / Edit Recipe</h2>
 
-    <section id="recipeSection" style="display:none;">
-        <h2>Recipe</h2>
-        <p id="recipeTitle"></p>
-        <p><strong>Total Cooking Time:</strong> <span id="totalTime"></span> minutes</p>
+      <label>Recipe name</label>
+      <input id="recipeName" placeholder="e.g. Chicken Curry">
 
-        <h3>Ingredients (Metric):</h3>
-        <ul id="ingredientList"></ul>
+      <label>Servings (recipe yields)</label>
+      <input id="baseServings" type="number" min="1" value="1" class="small-input">
 
-        <h3>Cooking Procedure:</h3>
-        <ol id="stepsList"></ol>
+      <label>Ingredients (one per line, include measurement) — e.g. <code>200 g chicken breast</code></label>
+      <textarea id="ingredients" placeholder="200 g chicken breast&#10;100 g tomato&#10;15 ml olive oil"></textarea>
 
-        <h3>Nutrition Estimates (approx):</h3>
-        <p id="nutritionInfo"></p>
+      <label>Instructions (one step per line; optional timer like <code>[10m]</code>)</label>
+      <textarea id="instructions" placeholder="Boil chicken [20m]&#10;Sauté onions [5m]"></textarea>
 
-        <div class="flex-btn">
-            <button onclick="saveRecipe()">💾 Save</button>
-            <button onclick="clearRecipe()">🗑 Clear</button>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="saveBtn">Save Recipe</button>
+        <button id="clearBtn" class="small-btn">Clear</button>
+      </div>
+
+      <div style="margin-top:12px" class="muted">Tip: set the base servings the recipe makes so scaling works correctly later.</div>
+
+      <div id="generatedArea" style="margin-top:14px" class="hidden card">
+        <h3 style="margin:0">Nutrition (approx)</h3>
+        <div style="display:flex;gap:8px;align-items:center;margin-top:8px">
+          <div class="muted">Scale to</div>
+          <input id="displayServings" type="number" min="1" value="1" class="small-input">
+          <div class="muted">servings</div>
         </div>
+        <div id="nutritionSummary" class="nutrition-line muted" style="margin-top:8px">N/A</div>
+        <div id="perStepNutrition" style="margin-top:8px"></div>
+        <div style="margin-top:8px" class="flex">
+          <button id="printRecipeBtn" class="small-btn">Print Recipe</button>
+        </div>
+      </div>
     </section>
 
-    <section id="shoppingListSection" style="display:none;">
-        <h2>Shopping List</h2>
-        <ul id="shoppingList"></ul>
-    </section>
+    <aside>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>My Recipes</strong>
+          <input id="search" placeholder="Search..." class="muted" style="width:55%">
+        </div>
+        <div id="recipesList" style="margin-top:10px;max-height:62vh;overflow:auto"></div>
+
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button id="refreshBtn" class="small-btn">Refresh</button>
+          <button id="clearAllBtn" class="small-btn">Clear All</button>
+        </div>
+      </div>
+
+      <div style="height:12px"></div>
+      <div class="card">
+        <strong>Quick Actions</strong>
+        <div style="margin-top:8px" class="flex">
+          <button id="randomSuggest" class="small-btn">Suggest Random</button>
+          <button id="importSample" class="small-btn">Load Sample</button>
+        </div>
+        <p class="muted" style="margin-top:8px">Works offline — data stored in browser localStorage.</p>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Cook Mode -->
+  <div id="cookPanel" class="card hidden" style="margin-top:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong id="cookTitle">Cook Mode</strong>
+      <div class="muted" id="cookProgress"></div>
+    </div>
+    <div style="margin-top:8px">
+      <div id="stepText" style="font-size:18px"></div>
+      <div id="timerText" class="muted" style="margin-top:6px"></div>
+      <div id="stepNutritionText" class="step-nut" style="margin-top:6px"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button id="prevStepBtn" class="small-btn">Previous</button>
+      <button id="nextStepBtn" class="small-btn">Next</button>
+      <button id="stopCookBtn" class="small-btn">Exit</button>
+    </div>
+  </div>
+
+  <!-- Shop Panel -->
+  <div id="shopPanel" class="card hidden" style="margin-top:14px">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <strong id="shopTitle">Shopping List</strong>
+      <div class="muted">Per recipe</div>
+    </div>
+    <div id="shopItems" style="margin-top:8px"></div>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button id="closeShopBtn" class="small-btn">Close</button>
+      <button id="clearShopBtn" class="small-btn">Clear Checked</button>
+    </div>
+  </div>
+
+  <!-- Print view -->
+  <div id="printView" class="print-only hidden" style="padding:20px;background:#fff">
+    <div id="printContent"></div>
+  </div>
 </main>
 
 <script>
-const nutritionDB = {
-    chicken: {cal:165, protein:31, carbs:0, fat:3.6},
-    rice: {cal:130, protein:2.7, carbs:28, fat:0.3},
-    tomato: {cal:18, protein:0.9, carbs:3.9, fat:0.2},
-    potato: {cal:77, protein:2, carbs:17, fat:0.1},
-    egg: {cal:68, protein:6, carbs:0.6, fat:5},
-    milk: {cal:42, protein:3.4, carbs:5, fat:1}
+/* ========= NUTRITION DB (subset of previous large db for brevity) ==========
+   In your copy you can paste the full DB used earlier. Keep this example moderate-sized.
+   Values are per 100g. Expand as needed.
+*/
+const NUTRITION_DB = {
+  "chicken breast":{cal:165,protein:31,carbs:0,fat:3.6},
+  "chicken":{cal:165,protein:31,carbs:0,fat:3.6},
+  "beef":{cal:250,protein:26,carbs:0,fat:15},
+  "salmon":{cal:208,protein:20,carbs:0,fat:13},
+  "egg":{cal:155,protein:13,carbs:1.1,fat:11},
+  "milk":{cal:60,protein:3.2,carbs:5,fat:3.3},
+  "olive oil":{cal:884,protein:0,carbs:0,fat:100},
+  "rice":{cal:130,protein:2.7,carbs:28,fat:0.3},
+  "pasta":{cal:131,protein:5,carbs:25,fat:1.1},
+  "tomato":{cal:18,protein:0.9,carbs:3.9,fat:0.2},
+  "onion":{cal:40,protein:1.1,carbs:9.3,fat:0.1},
+  "garlic":{cal:149,protein:6.4,carbs:33,fat:0.5},
+  "potato":{cal:77,protein:2,carbs:17,fat:0.1},
+  "cheddar cheese":{cal:403,protein:25,carbs:1.3,fat:33},
+  "butter":{cal:717,protein:0.85,carbs:0.06,fat:81},
+  "tofu":{cal:76,protein:8,carbs:1.9,fat:4.8},
+  "beans":{cal:347,protein:21,carbs:63,fat:1.2},
+  "lentils":{cal:116,protein:9,carbs:20,fat:0.4},
+  "spinach":{cal:23,protein:2.9,carbs:3.6,fat:0.4},
+  "carrot":{cal:41,protein:0.9,carbs:10,fat:0.2},
+  "olive oil":{cal:884,protein:0,carbs:0,fat:100}
 };
 
-function randomGrams() {
-    return Math.floor(Math.random() * 200) + 50; // 50–250g
+/* synonyms map — map common variations to DB keys */
+const SYNONYMS = {
+  "chicken thigh":"chicken",
+  "boneless chicken":"chicken",
+  "chicken breast":"chicken breast",
+  "tomatoes":"tomato",
+  "garlic clove":"garlic",
+  "oliveoil":"olive oil",
+  "olive-oil":"olive oil",
+  "red onion":"onion",
+  "yellow onion":"onion",
+  "brown rice":"rice",
+  "white rice":"rice"
+};
+
+/* ---------- parsing & unit helpers (same approach as before) ---------- */
+const UNIT_MAP = {
+  "g": {to_g:1,type:'mass'}, "gram":{to_g:1,type:'mass'}, "grams":{to_g:1,type:'mass'},
+  "kg":{to_g:1000,type:'mass'}, "kilogram":{to_g:1000,type:'mass'},
+  "mg":{to_g:0.001,type:'mass'},
+  "ml":{to_ml:1,type:'vol'}, "milliliter":{to_ml:1,type:'vol'}, "l":{to_ml:1000,type:'vol'}, "liter":{to_ml:1000,type:'vol'},
+  "tsp":{to_ml:4.928,type:'vol'}, "teaspoon":{to_ml:4.928,type:'vol'},
+  "tbsp":{to_ml:14.787,type:'vol'}, "tablespoon":{to_ml:14.787,type:'vol'},
+  "cup":{to_ml:240,type:'vol'}, "cups":{to_ml:240,type:'vol'},
+  "oz":{to_g:28.3495,type:'mass'}, "ounce":{to_g:28.3495,type:'mass'},
+  "lb":{to_g:453.592,type:'mass'}, "pound":{to_g:453.592,type:'mass'}
+};
+
+function evalFraction(frac){
+  if (typeof frac !== 'string') return parseFloat(frac);
+  if (frac.includes(' ')){ const parts=frac.split(' '); return parseFloat(parts[0])+evalFraction(parts[1]); }
+  if (frac.includes('/')){ const [a,b]=frac.split('/'); return parseFloat(a)/parseFloat(b); }
+  return parseFloat(frac);
+}
+function normalizeText(s){ return (s||'').toLowerCase().replace(/[.,()]/g,'').replace(/\s+/g,' ').trim(); }
+
+/* parse ingredient line; returns object { raw, name, quantity (numeric), quantity_unit:'g'|'ml'|other } */
+function parseIngredientLine(line){
+  const raw = (line||'').trim();
+  if (!raw) return null;
+  const regex = /^([\d\s\/.]+)?\s*([a-zA-Z]+)?\s*(.*)$/;
+  const m = raw.match(regex);
+  if (!m) return {raw,name:raw,quantity:null,quantity_unit:null};
+  const qtyRaw = (m[1]||'').trim();
+  const unitRaw = (m[2]||'').toLowerCase();
+  const rest = (m[3]||'').trim();
+  if (!qtyRaw){
+    return {raw,name:rest||unitRaw||raw,quantity:null,quantity_unit:null};
+  }
+  const qty = evalFraction(qtyRaw);
+  if (UNIT_MAP[unitRaw]){
+    const u = UNIT_MAP[unitRaw];
+    if (u.type === 'mass'){ return {raw,name:rest||unitRaw,quantity:qty * (u.to_g||1),quantity_unit:'g'} }
+    if (u.type === 'vol'){ return {raw,name:rest||unitRaw,quantity:qty * (u.to_ml||1),quantity_unit:'ml'} }
+  }
+  // unknown unit
+  return {raw,name:((unitRaw+' '+rest).trim()||raw),quantity:qty,quantity_unit:unitRaw};
 }
 
-function estimateCookingTime(ingredientCount) {
-    return ingredientCount * 5 + 15; // Simple estimation
+/* improved matching: finds best DB key for a parsed ingredient name */
+function matchNutritionKey(name){
+  if (!name) return null;
+  let n = normalizeText(name);
+  // synonyms
+  if (SYNONYMS[n]) return SYNONYMS[n];
+  // direct exact match
+  if (NUTRITION_DB[n]) return n;
+  // try substring match: prefer longest key that is contained in name
+  let best=null, bestLen=0;
+  for (const key in NUTRITION_DB){
+    if (n.includes(key) && key.length>bestLen){ best = key; bestLen = key.length; }
+  }
+  if (best) return best;
+  // try reverse: key contains some word from name (best longest)
+  const nameWords = n.split(' ');
+  for (const key in NUTRITION_DB){
+    for (const w of nameWords){
+      if (w && key.includes(w) && key.length>bestLen){ best=key; bestLen=key.length; }
+    }
+  }
+  if (best) return best;
+  return null;
 }
 
-function generateRecipe() {
-    const input = document.getElementById("ingredientInput").value.trim();
-    if (!input) return alert("Please enter ingredients.");
-    const ingredients = input.split(",").map(i=>i.trim().toLowerCase());
-
-    document.getElementById("recipeSection").style.display = "block";
-    document.getElementById("shoppingListSection").style.display = "block";
-
-    document.getElementById("recipeTitle").textContent = "Delicious Dish with " + ingredients.join(", ");
-
-    // Total time
-    const totalTime = estimateCookingTime(ingredients.length);
-    document.getElementById("totalTime").textContent = totalTime;
-
-    // Ingredient list with metric measurements
-    const ingList = document.getElementById("ingredientList");
-    ingList.innerHTML = "";
-    const measuredIngredients = [];
-    ingredients.forEach(ing=>{
-        const grams = randomGrams();
-        const li = document.createElement("li");
-        li.textContent = `${ing} - ${grams} g`;
-        measuredIngredients.push({name: ing, grams});
-        ingList.appendChild(li);
-    });
-
-    // Cooking procedure
-    const stepsList = document.getElementById("stepsList");
-    stepsList.innerHTML = "";
-    stepsList.innerHTML = `
-        <li>Wash and prepare all ingredients.</li>
-        <li>Heat oil in a pan and add ${ingredients[0] || 'main ingredient'}.</li>
-        <li>Add remaining ingredients and stir well.</li>
-        <li>Cook for ${totalTime} minutes or until done.</li>
-        <li>Serve hot and enjoy!</li>
-    `;
-
-    // Shopping list
-    const shopList = document.getElementById("shoppingList");
-    shopList.innerHTML = "";
-    ingredients.forEach(ing=>{
-        const li = document.createElement("li");
-        li.textContent = ing;
-        li.onclick = ()=> li.classList.toggle("checked");
-        shopList.appendChild(li);
-    });
-
-    // Nutrition calculation
-    let total = {cal:0, protein:0, carbs:0, fat:0};
-    ingredients.forEach(ing=>{
-        if (nutritionDB[ing]) {
-            total.cal += nutritionDB[ing].cal;
-            total.protein += nutritionDB[ing].protein;
-            total.carbs += nutritionDB[ing].carbs;
-            total.fat += nutritionDB[ing].fat;
-        }
-    });
-    document.getElementById("nutritionInfo").textContent =
-        `${total.cal} kcal | Protein: ${total.protein}g | Carbs: ${total.carbs}g | Fat: ${total.fat}g`;
-
-    // Save current recipe to memory
-    currentRecipe = {
-        title: document.getElementById("recipeTitle").textContent,
-        totalTime,
-        ingredients: measuredIngredients,
-        steps: Array.from(stepsList.querySelectorAll("li")).map(li => li.textContent),
-        nutrition: total
-    };
+/* ---------- unit system (metric/imperial) ---------- */
+let UNIT_SYSTEM = localStorage.getItem('unit_system_v4') || 'metric';
+function setUnitSystem(sys){ UNIT_SYSTEM=sys; localStorage.setItem('unit_system_v4',sys); document.getElementById('regionLabel').textContent = 'Unit: ' + (sys==='metric'?'Metric':'Imperial'); renderRecipes(); }
+function gramsToOz(g){ return g/28.3495; }
+function mlToCups(ml){ return ml/240; }
+function formatIngredientForDisplay(line, scale=1){
+  const p = parseIngredientLine(line);
+  if (!p) return line;
+  if (p.quantity == null) return p.name;
+  const qty = p.quantity * scale;
+  if (p.quantity_unit === 'g'){
+    if (UNIT_SYSTEM==='metric') return `${Math.round(qty)} g ${p.name}`;
+    else return `${gramsToOz(qty).toFixed(2)} oz ${p.name}`;
+  } else if (p.quantity_unit === 'ml'){
+    if (UNIT_SYSTEM==='metric') return `${Math.round(qty)} ml ${p.name}`;
+    else return `${mlToCups(qty).toFixed(2)} cup(s) ${p.name}`;
+  } else {
+    // unknown unit, show raw scaled approximate
+    return `${p.raw}`;
+  }
 }
 
-let currentRecipe = null;
+/* ---------- app state ---------- */
+let recipes = JSON.parse(localStorage.getItem('recipes_v4') || '[]');
+function saveAll(){ localStorage.setItem('recipes_v4', JSON.stringify(recipes)); }
 
-function saveRecipe() {
-    if (!currentRecipe) return alert("No recipe to save.");
-    const saved = JSON.parse(localStorage.getItem("savedRecipes") || "[]");
-    saved.push(currentRecipe);
-    localStorage.setItem("savedRecipes", JSON.stringify(saved));
-    alert("Recipe saved locally!");
+/* ---------- UI rendering ---------- */
+const recipesListEl = document.getElementById('recipesList'), searchEl = document.getElementById('search');
+function renderRecipes(){
+  const q = (searchEl.value||'').toLowerCase();
+  recipesListEl.innerHTML = '';
+  if (!recipes.length) recipesListEl.innerHTML = '<div class="muted">No saved recipes</div>';
+  recipes.forEach((r, idx) => {
+    if (q && !r.name.toLowerCase().includes(q)) return;
+    const el = document.createElement('div'); el.className='recipe-card';
+    const ingrDisplay = r.ingredients.map(l=>formatIngredientForDisplay(l,1)).join('<br>');
+    const stepsPreview = r.instructions.map(s=> s.step + (s.time? ` [${s.time}m]` : '')).join('<br>');
+    el.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center">
+      <strong>${r.name}</strong>
+      <div class="flex">
+        <button class="small-btn" onclick="openCook(${idx})">Cook</button>
+        <button class="small-btn" onclick="openShop(${idx})">Shop</button>
+        <button class="small-btn" onclick="editRecipe(${idx})">Edit</button>
+        <button class="small-btn" onclick="deleteRecipe(${idx})">Delete</button>
+        <button class="small-btn" onclick="printRecipe(${idx})">Print</button>
+      </div>
+    </div>
+    <div style="margin-top:8px" class="muted"><strong>Serves:</strong> ${r.servings} • <strong>Ingredients:</strong><br>${ingrDisplay}</div>
+    <div style="margin-top:8px" class="muted"><strong>Steps:</strong><br>${stepsPreview}</div>`;
+    recipesListEl.appendChild(el);
+  });
 }
 
-function clearRecipe() {
-    document.getElementById("recipeSection").style.display = "none";
-    document.getElementById("shoppingListSection").style.display = "none";
-    document.getElementById("ingredientInput").value = "";
-    currentRecipe = null;
+/* ---------- save / edit / delete ---------- */
+document.getElementById('saveBtn').addEventListener('click', ()=>{
+  const name = (document.getElementById('recipeName').value||'').trim();
+  const servings = Number(document.getElementById('baseServings').value) || 1;
+  const ingrText = (document.getElementById('ingredients').value||'').trim();
+  const instText = (document.getElementById('instructions').value||'').trim();
+  if (!name || !ingrText || !instText){ alert('Fill name, servings, ingredients and instructions.'); return; }
+  const ingredientLines = ingrText.split('\n').map(l=>l.trim()).filter(Boolean);
+  const instructions = instText.split('\n').map(line=>{
+    const tm = line.match(/\[(\d+)m\]/);
+    const time = tm ? parseInt(tm[1],10) : 0;
+    return {step: line.replace(/\[\d+m\]/,'').trim(), time};
+  });
+  const shoppingList = ingredientLines.map(it=>({item:it,checked:false}));
+  const recipe = {name, servings, ingredients: ingredientLines, instructions, shoppingList, created: Date.now()};
+  const existing = recipes.findIndex(x=>x.name.toLowerCase()===name.toLowerCase());
+  if (existing>=0) recipes[existing]=recipe; else recipes.unshift(recipe);
+  saveAll(); clearForm(); renderRecipes(); computeAndShowNutrition(recipe);
+});
+function clearForm(){ document.getElementById('recipeName').value=''; document.getElementById('baseServings').value='1'; document.getElementById('ingredients').value=''; document.getElementById('instructions').value=''; document.getElementById('generatedArea').classList.add('hidden'); }
+function editRecipe(i){ const r=recipes[i]; if(!r) return; document.getElementById('recipeName').value=r.name; document.getElementById('baseServings').value=r.servings||1; document.getElementById('ingredients').value=r.ingredients.join('\n'); document.getElementById('instructions').value=r.instructions.map(s=> s.step + (s.time?` [${s.time}m]`:'')).join('\n'); window.scrollTo({top:0,behavior:'smooth'}); }
+function deleteRecipe(i){ if(!confirm('Delete recipe?')) return; recipes.splice(i,1); saveAll(); renderRecipes(); }
+document.getElementById('clearAllBtn').addEventListener('click', ()=>{ if(!confirm('Delete ALL recipes?')) return; recipes=[]; saveAll(); renderRecipes(); });
+
+/* ---------- cook mode with per-step nutrition & scaling ---------- */
+let cookIndex=null, stepIndex=0, stepTimer=null, remainingSec=0;
+const cookPanel = document.getElementById('cookPanel');
+
+function openCook(i){
+  cookIndex=i; stepIndex=0; showCookStep(); cookPanel.classList.remove('hidden'); cookPanel.scrollIntoView({behavior:'smooth'});
 }
+function showCookStep(){
+  clearInterval(stepTimer);
+  if (cookIndex==null) return;
+  const recipe = recipes[cookIndex];
+  const inst = recipe.instructions[stepIndex];
+  document.getElementById('cookTitle').textContent = recipe.name;
+  document.getElementById('cookProgress').textContent = `Step ${stepIndex+1} / ${recipe.instructions.length}`;
+  document.getElementById('stepText').textContent = inst.step;
+  // compute per-step nutrition (for base recipe) then divide per-serving using displayServings value
+  computePerRecipeNutritionMap(recipe);
+  const displayServ = Number(document.getElementById('displayServings').value) || recipe.servings || 1;
+  const scale = displayServ / (recipe.servings || 1);
+  const perStep = (recipe._perStepNutrition && recipe._perStepNutrition[stepIndex]) || {cal:0,protein:0,carbs:0,fat:0};
+  const perStepScaled = { cal: Math.round(perStep.cal * scale), protein: Math.round(perStep.protein*10*scale)/10, carbs: Math.round(perStep.carbs*10*scale)/10, fat: Math.round(perStep.fat*10*scale)/10 };
+  document.getElementById('stepNutritionText').textContent = `This step (scaled): ${perStepScaled.cal} kcal • P ${perStepScaled.protein} g • C ${perStepScaled.carbs} g • F ${perStepScaled.fat} g`;
+  if (inst.time && inst.time>0){
+    remainingSec = inst.time * 60; updateTimerText();
+    stepTimer = setInterval(()=>{ remainingSec--; updateTimerText(); if (remainingSec<=0){ clearInterval(stepTimer); alert('Timer done: ' + inst.step); } },1000);
+  } else { document.getElementById('timerText').textContent = ''; }
+}
+function updateTimerText(){ const m=Math.floor(remainingSec/60), s=remainingSec%60; document.getElementById('timerText').textContent = `Time left: ${m}:${s.toString().padStart(2,'0')}`; }
+document.getElementById('nextStepBtn').addEventListener('click', ()=>{ if(cookIndex==null) return; if(stepIndex<recipes[cookIndex].instructions.length-1){ stepIndex++; showCookStep(); } else { alert('Recipe complete!'); closeCook(); } });
+document.getElementById('prevStepBtn').addEventListener('click', ()=>{ if(cookIndex==null) return; if(stepIndex>0){ stepIndex--; showCookStep(); } });
+document.getElementById('stopCookBtn').addEventListener('click', closeCook);
+function closeCook(){ clearInterval(stepTimer); cookIndex=null; stepIndex=0; cookPanel.classList.add('hidden'); }
+
+/* ---------- shopping list per recipe ---------- */
+const shopPanel = document.getElementById('shopPanel');
+function openShop(i){
+  const r=recipes[i]; if(!r) return;
+  document.getElementById('shopTitle').textContent = r.name + ' — Shopping';
+  const box=document.getElementById('shopItems'); box.innerHTML='';
+  r.shoppingList.forEach((it, idx)=>{ const div=document.createElement('div'); div.className='shopping-item'; const cb=document.createElement('input'); cb.type='checkbox'; cb.checked=!!it.checked; cb.addEventListener('change', ()=>{ r.shoppingList[idx].checked=cb.checked; saveAll(); }); const txt=document.createElement('div'); txt.textContent=it.item; div.appendChild(cb); div.appendChild(txt); box.appendChild(div); });
+  shopPanel.classList.remove('hidden');
+}
+document.getElementById('closeShopBtn').addEventListener('click', ()=> shopPanel.classList.add('hidden'));
+document.getElementById('clearShopBtn').addEventListener('click', ()=>{ const title=document.getElementById('shopTitle').textContent; const name=title.replace(' — Shopping',''); const idx=recipes.findIndex(x=>x.name===name); if (idx<0) return; recipes[idx].shoppingList = recipes[idx].shoppingList.filter(it=>!it.checked); saveAll(); openShop(idx); renderRecipes(); });
+
+/* ---------- nutrition calculations & per-step attribution ---------- */
+function computeNutritionForRecipe(recipe){
+  const totals = {cal:0,protein:0,carbs:0,fat:0};
+  const parsed = recipe.ingredients.map(line => parseIngredientLine(line));
+  const perIngredient = parsed.map(p=>{
+    if (!p || !p.quantity) return {p,cal:0,protein:0,carbs:0,fat:0,matched:false};
+    // try to match key
+    const key = matchNutritionKey(p.name);
+    if (!key) return {p,cal:0,protein:0,carbs:0,fat:0,matched:false};
+    const db = NUTRITION_DB[key];
+    let grams = p.quantity;
+    if (p.quantity_unit === 'ml') grams = p.quantity; // approx
+    const factor = grams/100;
+    const cal = (db.cal||0)*factor; const protein=(db.protein||0)*factor; const carbs=(db.carbs||0)*factor; const fat=(db.fat||0)*factor;
+    totals.cal += cal; totals.protein += protein; totals.carbs += carbs; totals.fat += fat;
+    return {p,cal,protein,carbs,fat,matched:true,dbKey:key};
+  });
+  totals.cal = Math.round(totals.cal);
+  totals.protein = Math.round(totals.protein*10)/10;
+  totals.carbs = Math.round(totals.carbs*10)/10;
+  totals.fat = Math.round(totals.fat*10)/10;
+  return {totals, perIngredient};
+}
+
+function computePerRecipeNutritionMap(recipe){
+  const info = computeNutritionForRecipe(recipe);
+  const perIng = info.perIngredient;
+  const stepsCount = Math.max(1, recipe.instructions.length);
+  const perStep = Array.from({length:stepsCount}, ()=>({cal:0,protein:0,carbs:0,fat:0}));
+  perIng.forEach(ingObj=>{
+    if (!ingObj || (!ingObj.cal && !ingObj.protein && !ingObj.carbs && !ingObj.fat)) return;
+    const nameLower = (ingObj.p.name||'').toLowerCase();
+    let matched=false;
+    if (ingObj.dbKey){
+      for (let s=0;s<stepsCount;s++){
+        const stepText = (recipe.instructions[s].step||'').toLowerCase();
+        if (stepText.includes(ingObj.dbKey)){ perStep[s].cal+=ingObj.cal; perStep[s].protein+=ingObj.protein; perStep[s].carbs+=ingObj.carbs; perStep[s].fat+=ingObj.fat; matched=true; break; }
+      }
+    }
+    if (!matched){
+      // fuzzy: match first word
+      const first = nameLower.split(' ')[0];
+      for (let s=0;s<stepsCount;s++){
+        if ((recipe.instructions[s].step||'').toLowerCase().includes(first)){ perStep[s].cal+=ingObj.cal; perStep[s].protein+=ingObj.protein; perStep[s].carbs+=ingObj.carbs; perStep[s].fat+=ingObj.fat; matched=true; break; }
+      }
+    }
+    if (!matched){
+      // leave unmatched for distribution
+      ingObj.matched=false;
+    } else ingObj.matched=true;
+  });
+  // distribute unmatched equally
+  const unmatched = perIng.filter(i=>i && !i.matched && (i.cal||i.protein||i.carbs||i.fat));
+  if (unmatched.length){
+    const sum = unmatched.reduce((acc,i)=>{ acc.cal+=i.cal; acc.protein+=i.protein; acc.carbs+=i.carbs; acc.fat+=i.fat; return acc; }, {cal:0,protein:0,carbs:0,fat:0});
+    const each = {cal: sum.cal/stepsCount, protein: sum.protein/stepsCount, carbs: sum.carbs/stepsCount, fat: sum.fat/stepsCount};
+    for (let s=0;s<stepsCount;s++){
+      perStep[s].cal += each.cal; perStep[s].protein += Math.round(each.protein*10)/10; perStep[s].carbs += Math.round(each.carbs*10)/10; perStep[s].fat += Math.round(each.fat*10)/10;
+    }
+  }
+  // round
+  for (let s=0;s<perStep.length;s++){
+    perStep[s].cal = Math.round(perStep[s].cal);
+    perStep[s].protein = Math.round(perStep[s].protein*10)/10;
+    perStep[s].carbs = Math.round(perStep[s].carbs*10)/10;
+    perStep[s].fat = Math.round(perStep[s].fat*10)/10;
+  }
+  recipe._perStepNutrition = perStep;
+  recipe._nutritionTotals = info.totals;
+  return {perStep, totals: info.totals};
+}
+
+/* compute & show for currently built recipe */
+function computeAndShowNutrition(recipeObj){
+  const info = computePerRecipeNutritionMap(recipeObj);
+  document.getElementById('generatedArea').classList.remove('hidden');
+  const displayServ = Number(document.getElementById('displayServings').value) || recipeObj.servings || 1;
+  const scale = displayServ / (recipeObj.servings || 1);
+  const totalsScaled = { cal: Math.round(info.totals.cal*scale), protein: Math.round(info.totals.protein*10*scale)/10, carbs: Math.round(info.totals.carbs*10*scale)/10, fat: Math.round(info.totals.fat*10*scale)/10 };
+  document.getElementById('nutritionSummary').textContent = `Totals (scaled): ${totalsScaled.cal} kcal • P ${totalsScaled.protein} g • C ${totalsScaled.carbs} g • F ${totalsScaled.fat} g`;
+  const perStepDiv = document.getElementById('perStepNutrition'); perStepDiv.innerHTML='';
+  info.perStep.forEach((sNut, idx)=>{
+    const sScaled = { cal: Math.round(sNut.cal*scale), protein: Math.round(sNut.protein*10*scale)/10, carbs: Math.round(sNut.carbs*10*scale)/10, fat: Math.round(sNut.fat*10*scale)/10 };
+    const div = document.createElement('div'); div.innerHTML = `<div style="margin-bottom:4px;"><strong>Step ${idx+1}:</strong> ${recipeObj.instructions[idx].step} ${recipeObj.instructions[idx].time?`[${recipeObj.instructions[idx].time}m]`:''}</div><div class="step-nut">Estimated (scaled): ${sScaled.cal} kcal • P ${sScaled.protein} g • C ${sScaled.carbs} g • F ${sScaled.fat} g</div>`;
+    perStepDiv.appendChild(div);
+  });
+}
+
+/* update nutrition when displayServings changes */
+document.getElementById('displayServings').addEventListener('input', ()=>{
+  // try to recompute if current preview exists
+  const name = (document.getElementById('recipeName').value||'Preview').trim();
+  const ingredientLines = (document.getElementById('ingredients').value||'').trim().split('\n').map(l=>l.trim()).filter(Boolean);
+  const instLines = (document.getElementById('instructions').value||'').trim().split('\n').map(line=>{ const tm=line.match(/\[(\d+)m\]/); return {step: line.replace(/\[\d+m\]/,'').trim(), time: tm?parseInt(tm[1],10):0}; });
+  if (!ingredientLines.length || !instLines.length) return;
+  const preview = { name, servings: Number(document.getElementById('baseServings').value)||1, ingredients:ingredientLines, instructions:instLines };
+  computeAndShowNutrition(preview);
+});
+
+/* when user types ingredients show preview */
+document.getElementById('ingredients').addEventListener('input', ()=>{
+  const name = (document.getElementById('recipeName').value||'Preview').trim();
+  const ingredientLines = (document.getElementById('ingredients').value||'').trim().split('\n').map(l=>l.trim()).filter(Boolean);
+  const instLines = (document.getElementById('instructions').value||'').trim().split('\n').map(line=>{ const tm=line.match(/\[(\d+)m\]/); return {step: line.replace(/\[\d+m\]/,'').trim(), time: tm?parseInt(tm[1],10):0}; });
+  if (!ingredientLines.length || !instLines.length){ document.getElementById('generatedArea').classList.add('hidden'); return; }
+  const preview = { name, servings: Number(document.getElementById('baseServings').value)||1, ingredients:ingredientLines, instructions:instLines };
+  computeAndShowNutrition(preview);
+});
+
+/* ---------- printing ---------- */
+function buildRecipeHTMLForPrint(r, displayServings){
+  const scale = (displayServings || r.servings) / (r.servings || 1);
+  const ingredientsHTML = r.ingredients.map(line => `<li>${formatIngredientForDisplay(line, scale)}</li>`).join('');
+  const stepsHTML = r.instructions.map(s => `<li>${s.step}${s.time?` — ${s.time} min`:''}</li>`).join('');
+  const nutrition = computePerRecipeNutritionMap(r).totals;
+  const nutritionScaled = { cal: Math.round(nutrition.cal*scale), protein: Math.round(nutrition.protein*10*scale)/10, carbs: Math.round(nutrition.carbs*10*scale)/10, fat: Math.round(nutrition.fat*10*scale)/10 };
+  const nutritionHTML = `<p>Calories: ${nutritionScaled.cal} kcal • Protein: ${nutritionScaled.protein} g • Carbs: ${nutritionScaled.carbs} g • Fat: ${nutritionScaled.fat} g</p>`;
+  return `<div style="font-family:Arial;color:#111"><h1>${r.name}</h1>
+    <p><strong>Serves:</strong> ${displayServings || r.servings}</p>
+    ${nutritionHTML}
+    <h3>Ingredients</h3><ul>${ingredientsHTML}</ul>
+    <h3>Steps</h3><ol>${stepsHTML}</ol>
+    </div>`;
+}
+function printRecipe(i){
+  const r = recipes[i]; if(!r) return;
+  const displayServ = Number(document.getElementById('displayServings').value) || r.servings || 1;
+  document.getElementById('printContent').innerHTML = buildRecipeHTMLForPrint(r, displayServ);
+  document.getElementById('printView').classList.remove('hidden');
+  setTimeout(()=>{ window.print(); document.getElementById('printView').classList.add('hidden'); },250);
+}
+document.getElementById('printRecipeBtn').addEventListener('click', ()=>{
+  const name = (document.getElementById('recipeName').value||'Preview').trim();
+  const ingredientLines = (document.getElementById('ingredients').value||'').trim().split('\n').filter(Boolean);
+  const instLines = (document.getElementById('instructions').value||'').trim().split('\n').filter(Boolean).map(line=>{ const tm=line.match(/\[(\d+)m\]/); return {step:line.replace(/\[\d+m\]/,'').trim(), time: tm?parseInt(tm[1],10):0}; });
+  const preview = { name, servings: Number(document.getElementById('baseServings').value)||1, ingredients:ingredientLines, instructions:instLines };
+  document.getElementById('printContent').innerHTML = buildRecipeHTMLForPrint(preview, Number(document.getElementById('displayServings').value) || preview.servings);
+  document.getElementById('printView').classList.remove('hidden');
+  setTimeout(()=>{ window.print(); document.getElementById('printView').classList.add('hidden'); },250);
+});
+
+/* ---------- export / import ---------- */
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(recipes, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='recipes_v4_backup.json'; a.click(); URL.revokeObjectURL(url);
+});
+document.getElementById('importBtn').addEventListener('click', ()=> document.getElementById('fileIn').click());
+document.getElementById('fileIn').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=ev=>{ try{ const parsed=JSON.parse(ev.target.result); if(!Array.isArray(parsed)) throw 0; const existing=recipes.map(x=>x.name.toLowerCase()); let added=0; parsed.forEach(item=>{ if (!item.name) return; if (existing.includes(item.name.toLowerCase())){} else { recipes.push(item); added++; } }); saveAll(); renderRecipes(); alert('Imported '+added+' recipes (duplicates skipped).'); }catch(err){ alert('Invalid JSON'); } }; r.readAsText(f); });
+
+/* ---------- units toggle ---------- */
+document.getElementById('toggleUnitsBtn').addEventListener('click', ()=>{ UNIT_SYSTEM = (UNIT_SYSTEM==='metric'?'imperial':'metric'); setUnitSystem(UNIT_SYSTEM); });
+
+/* ---------- misc UI ---------- */
+document.getElementById('search').addEventListener('input', renderRecipes);
+document.getElementById('refreshBtn').addEventListener('click', renderRecipes);
+document.getElementById('randomSuggest').addEventListener('click', ()=>{ if(!recipes.length) return alert('No recipes'); const r=recipes[Math.floor(Math.random()*recipes.length)]; alert('Try: '+r.name); });
+document.getElementById('importSample').addEventListener('click', ()=>{ const sample={name:'Spicy Tomato Pasta', servings:2, ingredients:['200 g pasta','150 g tomato','10 g garlic','15 ml olive oil','5 g basil'], instructions:[{step:'Boil pasta',time:10},{step:'Sauté garlic and tomato',time:5},{step:'Mix pasta and sauce',time:2}], shoppingList:[{item:'200 g pasta',checked:false},{item:'150 g tomato',checked:false}], created:Date.now()}; recipes.unshift(sample); saveAll(); renderRecipes(); });
+
+/* init */
+setUnitSystem(UNIT_SYSTEM);
+renderRecipes();
+
+/* expose functions for dynamic onclicks */
+window.openCook = openCook; window.openShop = openShop; window.editRecipe = editRecipe; window.deleteRecipe = deleteRecipe; window.printRecipe = printRecipe;
 </script>
-
 </body>
 </html>
