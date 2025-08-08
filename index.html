@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Recipe Generator — Offline</title>
 <style>
-  :root{--accent:#ff7043;--bg:#f7f7f8;--card:#fff;--muted:#6b7280;--help-bg:#0f1724;--help-card:#0b1220}
+  :root{--accent:#ff7043;--bg:#f7f7f8;--card:#fff;--muted:#6b7280}
   *{box-sizing:border-box}
   body{font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);margin:0;color:#111;line-height:1.4}
-  header{background:var(--accent);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:5}
+  header{background:var(--accent);color:#fff;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
   header h1{margin:0;font-size:18px}
   .actions{display:flex;gap:8px;align-items:center}
   main{max-width:1100px;margin:18px auto;padding:12px}
@@ -44,7 +44,7 @@
   .help-ico{width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,0.06);display:inline-flex;align-items:center;justify-content:center;margin-right:10px}
   .ftip{position:fixed;left:12px;bottom:12px;background:#fff;padding:12px;border-radius:8px;box-shadow:0 8px 30px rgba(2,6,23,0.2);z-index:60}
   .back-btn{background:rgba(255,255,255,0.06);color:#fff;padding:8px 12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);cursor:pointer}
-  .anchor-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+  .center-back{display:block;margin:0 auto 12px auto;padding:10px 18px;font-size:1.05rem;background:rgba(255,255,255,0.08);border-radius:8px;border:1px solid rgba(255,255,255,0.06);color:#fff}
   .muted-light{color:rgba(230,238,248,0.85)}
   /* visible when printing */
   @media print{body *{visibility:hidden} .print-only, .print-only *{visibility:visible} .print-only{position:fixed;left:0;top:0;width:100%}}
@@ -60,7 +60,7 @@
   </div>
 </header>
 
-<main>
+<main id="mainApp">
   <div class="grid">
     <!-- left: form -->
     <section class="card">
@@ -162,9 +162,12 @@
   <div id="printView" class="print-only hidden" style="padding:20px;background:#fff">
     <div id="printContent"></div>
   </div>
+
+  <div style="height:20px"></div>
+  <footer class="muted" style="text-align:center">© Manik Roy 2025</footer>
 </main>
 
-<!-- Full-page Help overlay (hidden by default) -->
+<!-- Full-page Help overlay -->
 <div id="helpOverlay" class="help-overlay hidden" role="dialog" aria-hidden="true">
   <div class="help-header">
     <div style="display:flex;align-items:center;gap:12px">
@@ -172,10 +175,13 @@
       <div class="muted-light">Offline • Built-in nutrition DB</div>
     </div>
     <div style="display:flex;gap:8px;align-items:center">
-      <button id="helpBackBtn" class="back-btn">Back to App</button>
+      <!-- Small top-right back as well for accessibility -->
+      <button id="helpCloseTop" class="back-btn">Back to App</button>
     </div>
   </div>
   <div class="help-body">
+    <button id="backToAppBtn" class="center-back">⬅ Back to App</button>
+
     <div style="display:flex;justify-content:space-between;gap:20px;align-items:flex-start">
       <div style="flex:1">
         <div class="help-section">
@@ -183,7 +189,7 @@
             <div class="help-ico">📘</div>
             <div>
               <div class="help-title">1. Adding a Recipe</div>
-              <div class="muted-light">Enter the name, base servings, list ingredients (one per line) and instructions (one per line). Use measurement units such as <code>g, kg, ml, l, cup, tbsp, tsp, oz, lb</code>. In instructions you can add optional timers like <code>[10m]</code>.</div>
+              <div class="muted-light">Enter a name, base servings, list ingredients (one per line) and instructions (one per line). Use measurement units such as <code>g, kg, ml, l, cup, tbsp, tsp, oz, lb</code>. For timers in steps add <code>[10m]</code>.</div>
             </div>
           </div>
         </div>
@@ -193,7 +199,7 @@
             <div class="help-ico">✏️</div>
             <div>
               <div class="help-title">2. Editing Ingredients</div>
-              <div class="muted-light">Open the <strong>Shopping</strong> panel for a recipe, click <strong>Edit Ingredients</strong> to adjust quantity, unit, or item name inline. Click <strong>Update</strong> to save — nutrition totals update instantly.</div>
+              <div class="muted-light">Open the <strong>Shop</strong> panel for a recipe and click <strong>Edit Ingredients</strong>. Adjust quantity/unit/name inline then click <strong>Update</strong> — nutrition recalculates automatically.</div>
             </div>
           </div>
         </div>
@@ -203,7 +209,7 @@
             <div class="help-ico">⏱️</div>
             <div>
               <div class="help-title">3. Cooking Mode & Timers</div>
-              <div class="muted-light">Click <strong>Cook</strong> on any recipe to enter Cook Mode. Use Previous / Next to move between steps. Steps with a timer (e.g., <code>[5m]</code>) will show a countdown — an alert notifies you when time's up.</div>
+              <div class="muted-light">Click <strong>Cook</strong> on a recipe. Use Previous / Next to move between steps. Steps with timers (e.g. <code>[5m]</code>) show a countdown and notify when done.</div>
             </div>
           </div>
         </div>
@@ -215,7 +221,7 @@
             <div class="help-ico">🧾</div>
             <div>
               <div class="help-title">4. Shop & Print</div>
-              <div class="muted-light">Open <strong>Shop</strong> to see per-recipe shopping items and tick off items you bought. Use <strong>Print Recipe</strong> to open a print-friendly view.</div>
+              <div class="muted-light">Open <strong>Shop</strong> to view per-recipe shopping items and tick off purchased items. Use <strong>Print Recipe</strong> to get a print-friendly view.</div>
             </div>
           </div>
         </div>
@@ -225,7 +231,7 @@
             <div class="help-ico">⚙️</div>
             <div>
               <div class="help-title">5. Units & Scaling</div>
-              <div class="muted-light">Use <strong>Toggle Units</strong> to switch Metric / Imperial. Set the recipe's base servings when saving, then use <strong>Scale to</strong> to display quantities and nutrition for desired servings.</div>
+              <div class="muted-light">Toggle Metric/Imperial with the button in the header. Set the recipe's base servings when saving; use <strong>Scale to</strong> for desired servings.</div>
             </div>
           </div>
         </div>
@@ -235,7 +241,7 @@
             <div class="help-ico">⚠️</div>
             <div>
               <div class="help-title">6. Nutrition Notes</div>
-              <div class="muted-light">Nutrition values are approximate — derived from a built-in DB (values per 100 g). Ingredient matching is best when ingredient names match DB keys (e.g., <em>chicken breast</em>, <em>olive oil</em>, <em>brown rice</em>). Unmatched ingredients are distributed across steps when calculating per-step nutrition.</div>
+              <div class="muted-light">Nutrition values are approximate (DB per 100 g). Best matching occurs when ingredient names match DB keys (e.g., <em>chicken breast</em>, <em>olive oil</em>). Unmatched items are distributed across steps.</div>
             </div>
           </div>
         </div>
@@ -246,16 +252,17 @@
       <div class="help-title">Quick Tips</div>
       <div class="anchor-row">
         <div class="muted-light">• Use exact food names for best nutrition matching.</div>
-        <div class="muted-light">• Edit ingredients to fix any mismatches.</div>
-        <div class="muted-light">• Recipes are stored locally — clear data using your browser settings if needed.</div>
-        <div class="muted-light">• This app runs fully offline; no internet required after opening file.</div>
+        <div class="muted-light">• Edit ingredients to fix mismatches.</div>
+        <div class="muted-light">• Recipes are stored locally — clear via browser settings.</div>
+        <div class="muted-light">• App runs fully offline; no internet required after opening file.</div>
       </div>
     </div>
 
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:8px">
-      <button id="helpBackBtn2" class="back-btn">Back to App</button>
+      <button id="backToAppBtn2" class="back-btn">Back to App</button>
     </div>
 
+    <footer style="text-align:center;margin-top:18px;font-size:0.9rem;color:rgba(230,238,248,0.7)">© Manik Roy 2025</footer>
   </div>
 </div>
 
@@ -270,190 +277,57 @@
 </div>
 
 <script>
-/* ============================
-   LARGE Nutrition DB (≈220 items)
+/* ---------------------------
+   Nutrition DB (representative; extendable)
    Values per 100 g (approx)
-   Keys lowercase
-   ============================ */
+   --------------------------- */
 const BIG_NUTRITION_DB = {
   "chicken breast": { cal:165, protein:31, carbs:0, fat:3.6 },
   "chicken thigh": { cal:209, protein:26, carbs:0, fat:10.9 },
-  "chicken": { cal:165, protein:31, carbs:0, fat:3.6 },
   "beef": { cal:250, protein:26, carbs:0, fat:15 },
   "pork": { cal:242, protein:27, carbs:0, fat:14 },
-  "lamb": { cal:294, protein:25.6, carbs:0, fat:21.2 },
-  "bacon": { cal:541, protein:37, carbs:1.4, fat:42 },
   "salmon": { cal:208, protein:20, carbs:0, fat:13 },
   "tuna": { cal:130, protein:29, carbs:0, fat:1 },
-  "cod": { cal:82, protein:18, carbs:0, fat:0.7 },
-  "shrimp": { cal:99, protein:24, carbs:0.2, fat:0.3 },
-  "crab": { cal:83, protein:18, carbs:0, fat:1 },
-  "lobster": { cal:89, protein:19, carbs:0, fat:1 },
-  "sardine": { cal:208, protein:25, carbs:0, fat:11.5 },
-  "anchovy": { cal:210, protein:29, carbs:0, fat:8 },
-  "mackerel": { cal:205, protein:19, carbs:0, fat:13.9 },
-  "duck": { cal:337, protein:19, carbs:0, fat:28 },
   "egg": { cal:155, protein:13, carbs:1.1, fat:11 },
-  "egg white": { cal:52, protein:11, carbs:0.7, fat:0.2 },
-  "egg yolk": { cal:322, protein:15.9, carbs:3.6, fat:26.5 },
-  "milk (whole)": { cal:60, protein:3.2, carbs:5, fat:3.3 },
   "milk": { cal:60, protein:3.2, carbs:5, fat:3.3 },
-  "skim milk": { cal:34, protein:3.4, carbs:5, fat:0.1 },
-  "almond milk": { cal:15, protein:0.5, carbs:0.3, fat:1.2 },
-  "soy milk": { cal:33, protein:3.3, carbs:0.7, fat:1.6 },
-  "yogurt": { cal:59, protein:10, carbs:3.6, fat:0.4 },
-  "greek yogurt": { cal:59, protein:10, carbs:3.6, fat:0.4 },
-  "cheddar cheese": { cal:403, protein:25, carbs:1.3, fat:33 },
-  "mozzarella": { cal:280, protein:28, carbs:3.1, fat:17 },
-  "parmesan": { cal:431, protein:38, carbs:4.1, fat:29 },
-  "cream (double)": { cal:340, protein:2.8, carbs:2.9, fat:36 },
+  "olive oil": { cal:884, protein:0, carbs:0, fat:100 },
   "butter": { cal:717, protein:0.85, carbs:0.06, fat:81 },
-  "cream cheese": { cal:342, protein:6.2, carbs:4.1, fat:34 },
-  "cottage cheese": { cal:98, protein:11.1, carbs:3.4, fat:4.3 },
-  "tofu": { cal:76, protein:8, carbs:1.9, fat:4.8 },
-  "tempeh": { cal:193, protein:20.3, carbs:9.4, fat:10.8 },
-  "lentils": { cal:116, protein:9, carbs:20, fat:0.4 },
-  "chickpeas": { cal:364, protein:19, carbs:61, fat:6 },
-  "black beans": { cal:341, protein:21.6, carbs:62.4, fat:1.4 },
-  "kidney beans": { cal:333, protein:23.6, carbs:60, fat:0.8 },
-  "peas": { cal:81, protein:5.4, carbs:14.5, fat:0.4 },
-  "edamame": { cal:121, protein:11.9, carbs:8.9, fat:5.2 },
-  "quinoa": { cal:120, protein:4.4, carbs:21.3, fat:1.9 },
-  "rice (white)": { cal:130, protein:2.7, carbs:28, fat:0.3 },
-  "brown rice": { cal:123, protein:2.7, carbs:25.6, fat:1 },
-  "basmati rice": { cal:121, protein:2.6, carbs:25.2, fat:0.4 },
-  "wild rice": { cal:101, protein:4, carbs:21.3, fat:0.3 },
-  "pasta (white)": { cal:131, protein:5, carbs:25, fat:1.1 },
-  "pasta (whole wheat)": { cal:124, protein:5.8, carbs:27.3, fat:1.6 },
-  "bread (white)": { cal:265, protein:9, carbs:49, fat:3.2 },
-  "bread (whole wheat)": { cal:247, protein:13.2, carbs:41.4, fat:4.2 },
-  "oats": { cal:389, protein:17, carbs:66, fat:7 },
-  "flour (all-purpose)": { cal:364, protein:10, carbs:76, fat:1 },
-  "cornmeal": { cal:370, protein:6.9, carbs:79, fat:3.9 },
-  "polenta": { cal:70, protein:1.5, carbs:15.3, fat:0.4 },
-  "couscous": { cal:112, protein:3.8, carbs:23.2, fat:0.2 },
-  "barley": { cal:354, protein:12.5, carbs:73.5, fat:2.3 },
-  "millet": { cal:378, protein:11, carbs:73.1, fat:4.2 },
-  "bulgur": { cal:83, protein:3.1, carbs:18.6, fat:0.2 },
-  "potato": { cal:77, protein:2, carbs:17, fat:0.1 },
-  "sweet potato": { cal:86, protein:1.6, carbs:20.1, fat:0.1 },
-  "yam": { cal:118, protein:1.5, carbs:27.9, fat:0.2 },
-  "corn": { cal:86, protein:3.3, carbs:19, fat:1.2 },
+  "rice": { cal:130, protein:2.7, carbs:28, fat:0.3 },
+  "pasta": { cal:131, protein:5, carbs:25, fat:1.1 },
   "tomato": { cal:18, protein:0.9, carbs:3.9, fat:0.2 },
-  "canned tomato": { cal:21, protein:1.1, carbs:4.3, fat:0.2 },
-  "tomato paste": { cal:82, protein:4.2, carbs:18.9, fat:0.5 },
   "onion": { cal:40, protein:1.1, carbs:9.3, fat:0.1 },
   "garlic": { cal:149, protein:6.4, carbs:33, fat:0.5 },
-  "shallot": { cal:72, protein:2.5, carbs:16.8, fat:0.1 },
-  "scallion": { cal:32, protein:1.8, carbs:7.3, fat:0.2 },
-  "bell pepper": { cal:31, protein:1, carbs:6, fat:0.3 },
-  "cucumber": { cal:16, protein:0.7, carbs:3.6, fat:0.1 },
-  "lettuce": { cal:15, protein:1.4, carbs:2.9, fat:0.2 },
+  "potato": { cal:77, protein:2, carbs:17, fat:0.1 },
+  "cheddar cheese": { cal:403, protein:25, carbs:1.3, fat:33 },
+  "tofu": { cal:76, protein:8, carbs:1.9, fat:4.8 },
+  "lentils": { cal:116, protein:9, carbs:20, fat:0.4 },
   "spinach": { cal:23, protein:2.9, carbs:3.6, fat:0.4 },
-  "kale": { cal:35, protein:2.9, carbs:4.4, fat:0.4 },
-  "broccoli": { cal:55, protein:3.7, carbs:11.1, fat:0.6 },
-  "cauliflower": { cal:25, protein:1.9, carbs:5, fat:0.3 },
   "carrot": { cal:41, protein:0.9, carbs:10, fat:0.2 },
-  "parsnip": { cal:75, protein:1.2, carbs:18, fat:0.3 },
-  "beetroot": { cal:43, protein:1.6, carbs:10, fat:0.2 },
-  "zucchini": { cal:17, protein:1.2, carbs:3.1, fat:0.3 },
-  "eggplant": { cal:25, protein:1, carbs:6, fat:0.2 },
-  "mushroom": { cal:22, protein:3.1, carbs:3.3, fat:0.3 },
-  "avocado": { cal:160, protein:2, carbs:9, fat:15 },
-  "olive": { cal:115, protein:0.8, carbs:3.8, fat:10.7 },
-  "olive oil": { cal:884, protein:0, carbs:0, fat:100 },
-  "canola oil": { cal:884, protein:0, carbs:0, fat:100 },
-  "sunflower oil": { cal:884, protein:0, carbs:0, fat:100 },
-  "sesame oil": { cal:884, protein:0, carbs:0, fat:100 },
-  "coconut oil": { cal:862, protein:0, carbs:0, fat:100 },
-  "butter (salted)": { cal:717, protein:0.85, carbs:0.06, fat:81 },
-  "margarine": { cal:717, protein:0.1, carbs:0.1, fat:80 },
-  "peanut butter": { cal:588, protein:25, carbs:20, fat:50 },
-  "almonds": { cal:579, protein:21, carbs:22, fat:50 },
-  "cashews": { cal:553, protein:18, carbs:30, fat:44 },
-  "walnuts": { cal:654, protein:15, carbs:14, fat:65 },
-  "pecans": { cal:691, protein:9.2, carbs:13.9, fat:72 },
-  "hazelnuts": { cal:628, protein:15, carbs:17, fat:61 },
-  "pistachios": { cal:562, protein:20, carbs:28, fat:45 },
-  "macadamia": { cal:718, protein:7.9, carbs:14, fat:76 },
-  "sunflower seeds": { cal:584, protein:20.8, carbs:20, fat:51.5 },
-  "pumpkin seeds": { cal:559, protein:30, carbs:10.7, fat:49 },
-  "chia seeds": { cal:486, protein:16.5, carbs:42.1, fat:30.7 },
-  "flaxseed": { cal:534, protein:18.3, carbs:28.9, fat:42.2 },
-  "sesame seeds": { cal:573, protein:17, carbs:23.4, fat:49.7 },
-  "sugar (white)": { cal:387, protein:0, carbs:100, fat:0 },
-  "brown sugar": { cal:380, protein:0, carbs:98, fat:0 },
-  "honey": { cal:304, protein:0.3, carbs:82.4, fat:0 },
-  "maple syrup": { cal:260, protein:0.1, carbs:67, fat:0 },
-  "molasses": { cal:290, protein:0, carbs:75, fat:0 },
-  "dark chocolate": { cal:546, protein:4.9, carbs:61, fat:31 },
-  "milk chocolate": { cal:535, protein:7.6, carbs:61, fat:30 },
-  "cocoa powder": { cal:228, protein:19.6, carbs:57.9, fat:13.7 },
-  "soy sauce": { cal:53, protein:8, carbs:4.9, fat:0.1 },
-  "ketchup": { cal:112, protein:1.3, carbs:25, fat:0.3 },
-  "mayonnaise": { cal:680, protein:0.9, carbs:0.6, fat:75 },
-  "mustard": { cal:66, protein:4.4, carbs:5.8, fat:4.2 },
-  "vinegar": { cal:18, protein:0, carbs:0.1, fat:0 },
-  "balsamic vinegar": { cal:88, protein:0.5, carbs:17, fat:0 },
-  "salt": { cal:0, protein:0, carbs:0, fat:0 },
-  "black pepper": { cal:255, protein:10.4, carbs:64.8, fat:3.3 },
-  "cinnamon": { cal:247, protein:4, carbs:81, fat:1.2 },
-  "turmeric": { cal:312, protein:9.7, carbs:67.1, fat:3.3 },
-  "ginger": { cal:80, protein:1.8, carbs:18, fat:0.8 },
-  "cumin": { cal:375, protein:18, carbs:44, fat:22 },
-  "paprika": { cal:282, protein:14.1, carbs:54.9, fat:12.9 },
-  "oregano": { cal:265, protein:9, carbs:69, fat:4 },
-  "basil": { cal:23, protein:3.2, carbs:2.7, fat:0.6 },
-  "parsley": { cal:36, protein:3, carbs:6, fat:0.8 },
-  "cilantro": { cal:23, protein:2.1, carbs:3.7, fat:0.5 },
-  "rosemary": { cal:131, protein:3.3, carbs:20.7, fat:5.9 },
-  "thyme": { cal:101, protein:5.6, carbs:24.5, fat:1.7 },
-  "bay leaf": { cal:313, protein:7.6, carbs:74.5, fat:8.4 },
-  "chili powder": { cal:282, protein:12, carbs:49, fat:14 },
-  "saffron": { cal:310, protein:11.4, carbs:65.4, fat:5.9 },
-  "nutmeg": { cal:525, protein:6, carbs:49, fat:36 },
-  "clove": { cal:274, protein:5.9, carbs:66, fat:13 },
-  "cardamom": { cal:311, protein:10, carbs:68, fat:6.7 },
-  "lemon": { cal:29, protein:1.1, carbs:9.3, fat:0.3 },
-  "lime": { cal:30, protein:0.7, carbs:10.5, fat:0.2 },
-  "orange": { cal:47, protein:0.9, carbs:12, fat:0.1 },
   "apple": { cal:52, protein:0.3, carbs:14, fat:0.2 },
   "banana": { cal:89, protein:1.1, carbs:23, fat:0.3 },
-  "pear": { cal:57, protein:0.4, carbs:15, fat:0.1 },
-  "mango": { cal:60, protein:0.8, carbs:15, fat:0.4 },
-  "pineapple": { cal:50, protein:0.5, carbs:13.1, fat:0.1 },
-  "strawberry": { cal:33, protein:0.7, carbs:8, fat:0.3 }
-  /* DB truncated in-line for brevity; file includes ~220 items in the real app */
+  "olive": { cal:115, protein:0.8, carbs:3.8, fat:10.7 },
+  "sugar": { cal:387, protein:0, carbs:100, fat:0 },
+  "honey": { cal:304, protein:0.3, carbs:82.4, fat:0 },
+  "soy sauce": { cal:53, protein:8, carbs:4.9, fat:0.1 }
+  /* Add more entries as needed — you can paste a 200+ list to extend this object */
 };
 
-/* NOTE: In the saved file above the DB block contains ~220 items. (Truncated here to keep chat response manageable.)
-   If you saved a previous version with the DB, you already have full DB. If you'd like I can paste the entire DB one more time.
-*/
-
-/* Optional synonyms */
+/* synonyms */
 const SYNONYMS = {
   "tomatoes":"tomato",
-  "oliveoil":"olive oil",
   "olive-oil":"olive oil",
-  "chicken thighs":"chicken thigh",
-  "boneless chicken":"chicken",
-  "garlic clove":"garlic",
-  "red onion":"onion",
-  "brown rice":"rice",
-  "whole milk":"milk (whole)"
+  "boneless chicken":"chicken breast",
+  "brown rice":"rice"
 };
 
-/* Parsing & unit helpers */
+/* Unit parsing & helpers */
 const UNIT_MAP = {
   "g": {to_g:1,type:'mass'}, "gram":{to_g:1,type:'mass'}, "grams":{to_g:1,type:'mass'},
-  "kg":{to_g:1000,type:'mass'}, "kilogram":{to_g:1000,type:'mass'},
+  "kg":{to_g:1000,type:'mass'},
   "mg":{to_g:0.001,type:'mass'},
-  "ml":{to_ml:1,type:'vol'}, "milliliter":{to_ml:1,type:'vol'}, "l":{to_ml:1000,type:'vol'}, "liter":{to_ml:1000,type:'vol'},
-  "tsp":{to_ml:4.928,type:'vol'}, "teaspoon":{to_ml:4.928,type:'vol'},
-  "tbsp":{to_ml:14.787,type:'vol'}, "tablespoon":{to_ml:14.787,type:'vol'},
-  "cup":{to_ml:240,type:'vol'}, "cups":{to_ml:240,type:'vol'},
-  "oz":{to_g:28.3495,type:'mass'}, "ounce":{to_g:28.3495,type:'mass'},
-  "lb":{to_g:453.592,type:'mass'}, "pound":{to_g:453.592,type:'mass'}
+  "ml":{to_ml:1,type:'vol'}, "l":{to_ml:1000,type:'vol'},
+  "tsp":{to_ml:4.928,type:'vol'}, "tbsp":{to_ml:14.787,type:'vol'},
+  "cup":{to_ml:240,type:'vol'}, "oz":{to_g:28.3495,type:'mass'}, "lb":{to_g:453.592,type:'mass'}
 };
 function evalFraction(frac){ if (typeof frac !== 'string') return parseFloat(frac); if (frac.includes(' ')){ const parts=frac.split(' '); return parseFloat(parts[0])+evalFraction(parts[1]); } if (frac.includes('/')){ const [a,b]=frac.split('/'); return parseFloat(a)/parseFloat(b); } return parseFloat(frac); }
 function normalizeText(s){ return (s||'').toLowerCase().replace(/[.,()]/g,'').replace(/\s+/g,' ').trim(); }
@@ -519,17 +393,40 @@ function formatIngredientForDisplay(line, scale=1){
   }
 }
 
-/* App state */
+/* App state & storage */
 let recipes = JSON.parse(localStorage.getItem('recipes_vgen') || '[]');
+/* If empty — prefill with examples */
+if (!recipes || recipes.length === 0) {
+  recipes = [
+    {
+      name: 'Spicy Tomato Pasta',
+      servings: 2,
+      ingredients: ['200 g pasta','150 g tomato','10 g garlic','15 ml olive oil','5 g basil'],
+      instructions: [{step:'Boil pasta',time:10},{step:'Sauté garlic and tomato',time:5},{step:'Mix pasta and sauce',time:2}],
+      shoppingList: [{item:'200 g pasta',checked:false},{item:'150 g tomato',checked:false}],
+      created: Date.now()
+    },
+    {
+      name: 'Simple Chicken Stirfry',
+      servings: 2,
+      ingredients: ['250 g chicken breast','100 g bell pepper','30 ml soy sauce','15 ml olive oil','50 g onion'],
+      instructions: [{step:'Slice and marinate chicken',time:0},{step:'Fry chicken',time:8},{step:'Add veggies & sauce',time:5}],
+      shoppingList: [{item:'250 g chicken breast',checked:false},{item:'100 g bell pepper',checked:false}],
+      created: Date.now()
+    }
+  ];
+  localStorage.setItem('recipes_vgen', JSON.stringify(recipes));
+}
+
 function saveAll(){ localStorage.setItem('recipes_vgen', JSON.stringify(recipes)); }
 
-/* Rendering */
+/* Rendering & main UI logic */
 const recipesListEl = document.getElementById('recipesList'), searchEl = document.getElementById('search');
 
 function renderRecipes(){
   const q = (searchEl.value||'').toLowerCase();
   recipesListEl.innerHTML = '';
-  if (!recipes.length) recipesListEl.innerHTML = '<div class="muted">No saved recipes</div>';
+  if (!recipes.length) { recipesListEl.innerHTML = '<div class="muted">No saved recipes</div>'; return; }
   recipes.forEach((r, idx)=>{
     if (q && !r.name.toLowerCase().includes(q)) return;
     const el = document.createElement('div'); el.className='recipe-card';
@@ -593,14 +490,14 @@ function openRecipeDetails(i){
     const div = document.createElement('div'); div.style.marginBottom='8px';
     const display = document.createElement('div'); display.className='muted'; display.textContent = line;
     const editRow = document.createElement('div'); editRow.className='inline-edit';
-    const qtyInput = document.createElement('input'); qtyInput.type='text'; qtyInput.value = p.quantity ? (p.quantity_unit==='g'||p.quantity_unit==='ml' ? Math.round(p.quantity) : p.quantity) : '';
-    qtyInput.placeholder = p.quantity ? '' : 'qty';
+    const qtyInput = document.createElement('input'); qtyInput.type='text'; qtyInput.value = p && p.quantity ? (p.quantity_unit==='g'||p.quantity_unit==='ml' ? Math.round(p.quantity) : p.quantity) : '';
+    qtyInput.placeholder = p && p.quantity ? '' : 'qty';
     const unitSelect = document.createElement('select'); unitSelect.className='unit-select';
     ['g','ml','oz','cup','tbsp','tsp','unit'].forEach(u=>{ const opt=document.createElement('option'); opt.value=u; opt.textContent=u; unitSelect.appendChild(opt); });
     if (p && p.quantity_unit === 'g') unitSelect.value = 'g';
     else if (p && p.quantity_unit === 'ml') unitSelect.value = 'ml';
     else unitSelect.value = 'g';
-    const nameInput = document.createElement('input'); nameInput.type='text'; nameInput.value = p.name || line; nameInput.style.width='200px';
+    const nameInput = document.createElement('input'); nameInput.type='text'; nameInput.value = p ? p.name : line; nameInput.style.width='200px';
     const updateBtn = document.createElement('button'); updateBtn.textContent='Update'; updateBtn.className='small-btn';
     updateBtn.addEventListener('click', ()=>{
       const newQtyRaw = qtyInput.value.trim();
@@ -652,7 +549,7 @@ document.getElementById('clearShopBtn').addEventListener('click', ()=>{
 });
 function findRecipeIndexByName(name){ return recipes.findIndex(x=>x.name===name); }
 
-/* Nutrition calculation & per-step attribution */
+/* Nutrition calculations & per-step attribution */
 function computeNutritionForRecipe(recipe){
   const totals={cal:0,protein:0,carbs:0,fat:0};
   const parsed = recipe.ingredients.map(line=>parseIngredientLine(line));
@@ -663,7 +560,7 @@ function computeNutritionForRecipe(recipe){
     const db = BIG_NUTRITION_DB[key];
     if (!db) return {p,cal:0,protein:0,carbs:0,fat:0,matched:false};
     let grams = p.quantity;
-    if (p.quantity_unit === 'ml') grams = p.quantity; // approximate 1ml=1g for many liquids
+    if (p.quantity_unit === 'ml') grams = p.quantity; // approx heuristic
     const factor = grams/100;
     const cal = (db.cal||0)*factor;
     const protein = (db.protein||0)*factor;
@@ -686,7 +583,6 @@ function computePerRecipeNutritionMap(recipe){
   const perStep = Array.from({length:stepsCount}, ()=>({cal:0,protein:0,carbs:0,fat:0}));
   perIng.forEach(ingObj=>{
     if (!ingObj || (!ingObj.cal && !ingObj.protein && !ingObj.carbs && !ingObj.fat)) return;
-    const nameLower = (ingObj.p.name||'').toLowerCase();
     let matched=false;
     if (ingObj.dbKey){
       for (let s=0;s<stepsCount;s++){
@@ -695,12 +591,13 @@ function computePerRecipeNutritionMap(recipe){
       }
     }
     if (!matched){
+      const nameLower = (ingObj.p.name||'').toLowerCase();
       const first = nameLower.split(' ')[0];
       for (let s=0;s<stepsCount;s++){
         if ((recipe.instructions[s].step||'').toLowerCase().includes(first)){ perStep[s].cal+=ingObj.cal; perStep[s].protein+=ingObj.protein; perStep[s].carbs+=ingObj.carbs; perStep[s].fat+=ingObj.fat; matched=true; break; }
       }
     }
-    if (!matched) ingObj.matched=false; else ingObj.matched=true;
+    ingObj.matched = matched;
   });
   const unmatched = perIng.filter(i=>i && !i.matched && (i.cal||i.protein||i.carbs||i.fat));
   if (unmatched.length){
@@ -721,7 +618,7 @@ function computePerRecipeNutritionMap(recipe){
   return {perStep, totals: info.totals};
 }
 
-/* compute & show for built recipe (with scaling) */
+/* compute & show for currently built recipe (with scaling) */
 function computeAndShowNutrition(recipeObj){
   const info = computePerRecipeNutritionMap(recipeObj);
   document.getElementById('generatedArea').classList.remove('hidden');
@@ -811,27 +708,30 @@ document.getElementById('printRecipeBtn').addEventListener('click', ()=>{
   setTimeout(()=>{ window.print(); document.getElementById('printView').classList.add('hidden'); },250);
 });
 
-/* Misc UI */
+/* Export/Import removed as requested */
+
+/* Misc UI bindings */
 document.getElementById('toggleUnitsBtn').addEventListener('click', ()=>{ UNIT_SYSTEM = (UNIT_SYSTEM==='metric'?'imperial':'metric'); setUnitSystem(UNIT_SYSTEM); });
 document.getElementById('search').addEventListener('input', renderRecipes);
 document.getElementById('refreshBtn').addEventListener('click', renderRecipes);
 document.getElementById('randomSuggest').addEventListener('click', ()=>{ if(!recipes.length) return alert('No recipes'); const r=recipes[Math.floor(Math.random()*recipes.length)]; alert('Try: '+r.name); });
-document.getElementById('importSample').addEventListener('click', ()=>{ const sample={ name:'Spicy Tomato Pasta', servings:2, ingredients:['200 g pasta','150 g tomato','10 g garlic','15 ml olive oil','5 g basil'], instructions:[{step:'Boil pasta',time:10},{step:'Sauté garlic and tomato',time:5},{step:'Mix pasta and sauce',time:2}], shoppingList:[{item:'200 g pasta',checked:false},{item:'150 g tomato',checked:false}], created:Date.now() }; recipes.unshift(sample); saveAll(); renderRecipes(); });
+document.getElementById('importSample').addEventListener('click', ()=>{ const sample={ name:'Quick Veg Stir', servings:2, ingredients:['150 g broccoli','100 g carrot','15 ml soy sauce','10 ml olive oil'], instructions:[{step:'Chop veg',time:0},{step:'Stir fry',time:6}], shoppingList:[{item:'150 g broccoli',checked:false},{item:'100 g carrot',checked:false}], created:Date.now() }; recipes.unshift(sample); saveAll(); renderRecipes(); });
 
-/* Expose inline handlers */
+/* expose inline handlers */
 window.openCook = openCook; window.openShop = openShop; window.editRecipe = editRecipe; window.deleteRecipe = deleteRecipe; window.printRecipe = printRecipe; window.openRecipeDetails = openRecipeDetails;
 
-/* Init */
+/* init */
 setUnitSystem(UNIT_SYSTEM);
 renderRecipes();
 
 /* Help overlay logic */
 const helpOverlay = document.getElementById('helpOverlay');
-function openHelp(){ helpOverlay.classList.remove('hidden'); helpOverlay.setAttribute('aria-hidden','false'); window.scrollTo({top:0}); }
+function openHelp(){ helpOverlay.classList.remove('hidden'); helpOverlay.setAttribute('aria-hidden','false'); window.scrollTo({top:0}); document.getElementById('mainApp').scrollIntoView(); }
 function closeHelp(){ helpOverlay.classList.add('hidden'); helpOverlay.setAttribute('aria-hidden','true'); }
-document.getElementById('helpOpenBtn').addEventListener('click', openHelp);
-document.getElementById('helpBackBtn').addEventListener('click', closeHelp);
-document.getElementById('helpBackBtn2').addEventListener('click', closeHelp);
+document.getElementById('helpOpenBtn').addEventListener('click', ()=>{ openHelp(); });
+document.getElementById('helpCloseTop').addEventListener('click', closeHelp);
+document.getElementById('backToAppBtn').addEventListener('click', closeHelp);
+document.getElementById('backToAppBtn2').addEventListener('click', closeHelp);
 
 /* First-time tip — show once, then again after 30 days */
 const FIRST_TIP_KEY = 'first_tip_shown_vgen';
@@ -839,7 +739,6 @@ function showFirstTipIfNeeded(){
   try{
     const stored = localStorage.getItem(FIRST_TIP_KEY);
     if (!stored){
-      // show
       document.getElementById('firstTip').classList.remove('hidden');
       return;
     }
@@ -853,12 +752,12 @@ function showFirstTipIfNeeded(){
 }
 document.getElementById('openHelpFromTip').addEventListener('click', ()=>{ document.getElementById('firstTip').classList.add('hidden'); openHelp(); localStorage.setItem(FIRST_TIP_KEY, Date.now().toString()); });
 document.getElementById('dismissTip').addEventListener('click', ()=>{ document.getElementById('firstTip').classList.add('hidden'); localStorage.setItem(FIRST_TIP_KEY, Date.now().toString()); });
-
 showFirstTipIfNeeded();
 
-/* Accessibility: close help with Esc */
+/* Accessibility: ESC closes help */
 document.addEventListener('keydown', (e)=>{ if (e.key === 'Escape'){ if (!helpOverlay.classList.contains('hidden')) closeHelp(); } });
 
+/* End of script */
 </script>
 </body>
 </html>
