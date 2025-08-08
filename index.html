@@ -2,447 +2,1025 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Recipe Generator - Manik Roy 2025</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Reciply - Recipe Generator © Manik Roy 2025</title>
 <style>
-  :root {
-    --color-bg-light: #fafafa;
-    --color-text-light: #222;
-    --color-bg-dark: #121212;
-    --color-text-dark: #eee;
-    --color-primary: #4CAF50;
-    --color-accent: #ff9800;
+  /* Reset & base */
+  * {
+    box-sizing: border-box;
   }
-
   body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--color-bg-light);
-    color: var(--color-text-light);
+    margin: 0; padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    background-color: var(--bg);
+    color: var(--fg);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    text-align: center;
     padding: 1rem;
     transition: background-color 0.3s, color 0.3s;
   }
-  body.dark {
-    background-color: var(--color-bg-dark);
-    color: var(--color-text-dark);
+
+  :root {
+    --bg-light: #fefefe;
+    --fg-light: #111;
+    --bg-dark: #121212;
+    --fg-dark: #ddd;
+    --accent: #ff7043;
   }
 
-  main {
-    max-width: 600px;
-    width: 100%;
-    text-align: center;
+  body.light {
+    --bg: var(--bg-light);
+    --fg: var(--fg-light);
+  }
+  body.dark {
+    --bg: var(--bg-dark);
+    --fg: var(--fg-dark);
   }
 
   h1 {
     margin-bottom: 0.2em;
+    color: var(--accent);
+  }
+  small {
+    font-weight: 400;
+    color: var(--accent);
+    margin-bottom: 1rem;
+    display: block;
   }
 
+  /* Container */
+  #app {
+    width: 100%;
+    max-width: 900px;
+    margin: auto;
+  }
+
+  /* Form elements */
   label {
     display: block;
-    margin: 1em 0 0.3em;
+    margin: 0.5em 0 0.25em;
     font-weight: 600;
   }
-
-  input[type="text"] {
-    width: 80%;
-    max-width: 400px;
+  input[type=text], input[type=number], select, textarea {
+    width: 100%;
     padding: 0.5em;
     font-size: 1rem;
     border-radius: 6px;
-    border: 1px solid #ccc;
-    outline-offset: 2px;
+    border: 1px solid #999;
+    background: var(--bg);
+    color: var(--fg);
+    transition: border-color 0.3s;
   }
-  body.dark input[type="text"] {
-    background-color: #333;
-    border: 1px solid #555;
-    color: var(--color-text-dark);
-  }
-
-  button {
-    margin: 1em 0.3em;
-    padding: 0.6em 1.2em;
-    font-size: 1rem;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    background-color: var(--color-primary);
-    color: white;
-    transition: background-color 0.3s;
-  }
-  button:hover, button:focus {
-    background-color: #388e3c;
+  input[type=text]:focus, input[type=number]:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
     outline: none;
   }
-
-  button.secondary {
-    background-color: var(--color-accent);
+  button {
+    background: var(--accent);
+    border: none;
+    color: white;
+    padding: 0.7em 1.2em;
+    font-size: 1rem;
+    border-radius: 6px;
+    margin-top: 1em;
+    cursor: pointer;
+    transition: background 0.3s;
   }
-  button.secondary:hover, button.secondary:focus {
-    background-color: #f57c00;
+  button:hover {
+    background: #e64a19;
+  }
+  button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
   }
 
-  .recipe-list, .favorites-list {
+  /* Flex grids */
+  .flex-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1em;
+    justify-content: center;
+  }
+  .flex-col {
+    flex: 1 1 300px;
+    min-width: 280px;
+  }
+
+  /* Recipe List */
+  #recipes-list {
     margin-top: 1em;
     text-align: left;
   }
-
-  .recipe-item {
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    margin-bottom: 1em;
+  .recipe-card {
+    background: var(--bg-dark);
+    background: var(--accent);
+    background: linear-gradient(45deg, #ff7043, #ff5722);
+    color: white;
+    border-radius: 12px;
     padding: 1em;
-    background-color: #f9f9f9;
+    margin-bottom: 1em;
+    box-shadow: 0 4px 8px rgb(0 0 0 / 0.2);
+    cursor: pointer;
+    transition: transform 0.2s;
   }
-  body.dark .recipe-item {
-    background-color: #222;
-    border-color: #444;
-  }
-
-  .recipe-item h3 {
-    margin-top: 0;
+  .recipe-card:hover {
+    transform: scale(1.03);
   }
 
-  .ingredients-list {
-    margin: 0.3em 0 0.8em 1em;
-  }
-
-  .instructions {
-    white-space: pre-wrap;
-  }
-
-  .flex-row {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 1em;
-  }
-
-  .portion-input {
-    width: 80px;
-    padding: 0.4em;
-    font-size: 1rem;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-  }
-  body.dark .portion-input {
-    background-color: #333;
-    border: 1px solid #555;
-    color: var(--color-text-dark);
-  }
-
-  .toggle-switch {
+  /* Recipe Detail Modal */
+  #recipe-detail {
     position: fixed;
-    top: 1em;
-    right: 1em;
-    user-select: none;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgb(0 0 0 / 0.75);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    z-index: 1000;
+  }
+  #recipe-detail.active {
+    display: flex;
+  }
+  #recipe-detail > div {
+    background: var(--bg);
+    color: var(--fg);
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 700px;
+    padding: 1.5em;
+    text-align: left;
+    position: relative;
+  }
+  #recipe-detail h2 {
+    margin-top: 0;
+    color: var(--accent);
+  }
+  #recipe-detail button.close-btn {
+    position: absolute;
+    top: 0.5em;
+    right: 0.7em;
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    color: var(--accent);
+    cursor: pointer;
+  }
+  ul {
+    padding-left: 1.2em;
+  }
+  ul li {
+    margin-bottom: 0.4em;
   }
 
-  footer {
-    margin-top: auto;
-    padding: 1em 0;
+  /* Controls */
+  #filters {
+    margin-bottom: 1.5em;
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 1em;
+    box-shadow: 0 0 10px rgb(0 0 0 / 0.1);
+  }
+
+  /* Camera */
+  #camera-container {
+    margin-top: 1em;
+    position: relative;
     text-align: center;
-    font-size: 0.9rem;
-    color: #888;
   }
-  body.dark footer {
-    color: #bbb;
+  video {
+    max-width: 100%;
+    border-radius: 12px;
+    max-height: 200px;
+    background: black;
+  }
+  #capture-btn {
+    margin-top: 0.5em;
+  }
+  #captured-text {
+    margin-top: 0.5em;
+    background: var(--bg-dark);
+    color: white;
+    padding: 0.5em;
+    border-radius: 8px;
+    min-height: 3em;
   }
 
+  /* Favorites */
+  #favorites-list {
+    margin-top: 1em;
+    text-align: left;
+  }
+  #favorites-list .recipe-card {
+    background: #3e2723;
+  }
+
+  /* Responsive */
   @media (max-width: 600px) {
-    input[type="text"] {
-      width: 100%;
-      max-width: none;
+    body {
+      padding: 0.5rem;
     }
+    .flex-col {
+      flex: 1 1 100%;
+    }
+  }
+
+  /* Dark mode toggle */
+  #dark-mode-toggle {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: var(--accent);
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    border: none;
+    font-size: 1.6rem;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 0 10px var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 </style>
 </head>
 <body>
-  <div class="toggle-switch" title="Toggle Dark Mode">
-    <label>
-      <input type="checkbox" id="darkModeToggle" aria-label="Toggle dark mode" />
-      🌙 Dark Mode
-    </label>
+  <h1>Reciply</h1>
+  <small>Recipe Generator © Manik Roy 2025</small>
+
+  <div id="app">
+
+    <section id="ingredient-input" class="flex-col">
+      <label for="ingredients">Enter your ingredients (comma separated):</label>
+      <textarea id="ingredients" rows="2" placeholder="e.g. tomato, garlic, chicken"></textarea>
+
+      <div id="camera-container">
+        <video id="camera" autoplay playsinline></video><br />
+        <button id="capture-btn">Capture Ingredients (Simulated)</button>
+        <div id="captured-text" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section id="filters">
+      <h3>Filters & Preferences</h3>
+
+      <div class="flex-row">
+        <div class="flex-col">
+          <label for="dietary">Dietary Preferences & Restrictions:</label>
+          <select id="dietary" multiple>
+            <option value="vegan">Vegan</option>
+            <option value="vegetarian">Vegetarian</option>
+            <option value="gluten-free">Gluten-Free</option>
+            <option value="keto">Keto</option>
+            <option value="dairy-free">Dairy-Free</option>
+            <option value="nut-free">Nut-Free</option>
+            <option value="none" selected>None</option>
+          </select>
+        </div>
+
+        <div class="flex-col">
+          <label for="cuisine">Cuisine Type:</label>
+          <select id="cuisine" multiple>
+            <option value="italian">Italian</option>
+            <option value="indian">Indian</option>
+            <option value="mexican">Mexican</option>
+            <option value="american">American</option>
+            <option value="chinese">Chinese</option>
+            <option value="french">French</option>
+            <option value="none" selected>None</option>
+          </select>
+        </div>
+
+        <div class="flex-col">
+          <label for="meal">Meal Type:</label>
+          <select id="meal" multiple>
+            <option value="breakfast">Breakfast</option>
+            <option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option>
+            <option value="snack">Snack</option>
+            <option value="dessert">Dessert</option>
+            <option value="none" selected>None</option>
+          </select>
+        </div>
+
+        <div class="flex-col">
+          <label for="max-time">Max Cooking Time (minutes):</label>
+          <input type="number" id="max-time" min="1" max="240" placeholder="e.g. 30" />
+        </div>
+      </div>
+
+      <div style="margin-top:1em;">
+        <button id="find-recipes-btn">Find Recipes</button>
+        <button id="random-recipe-btn">Surprise Me!</button>
+      </div>
+    </section>
+
+    <section id="recipes-list" aria-live="polite">
+      <!-- Recipes show here -->
+    </section>
+
+    <section id="favorites-section">
+      <h3>Your Favorites</h3>
+      <div id="favorites-list">
+        <!-- Favorite recipes here -->
+      </div>
+    </section>
+
+    <section id="shopping-list-section" style="margin-top:2em;">
+      <h3>Shopping List</h3>
+      <ul id="shopping-list"></ul>
+      <button id="clear-shopping-list-btn">Clear Shopping List</button>
+    </section>
+
   </div>
-  <main>
-    <h1>Recipe Generator</h1>
-    <p>Enter ingredients you have (comma separated):</p>
-    <input type="text" id="ingredientsInput" placeholder="e.g. chicken, rice, tomato" aria-label="Enter ingredients" />
-    <div class="flex-row" style="justify-content:center;">
-      <button id="generateBtn">Generate Recipes</button>
-      <button id="showFavBtn" class="secondary">Show Favorites</button>
-    </div>
 
-    <div id="portionControl" style="display:none; margin-top:1em;">
-      <label for="portionInput">Adjust Portions:</label>
-      <input type="number" id="portionInput" min="1" value="1" class="portion-input" aria-label="Adjust portions" />
-    </div>
+  <!-- Recipe Detail Modal -->
+  <div id="recipe-detail" role="dialog" aria-modal="true" aria-labelledby="recipe-title">
+    <div>
+      <button class="close-btn" aria-label="Close">&times;</button>
+      <h2 id="recipe-title"></h2>
+      <p><strong>Cuisine:</strong> <span id="recipe-cuisine"></span></p>
+      <p><strong>Meal Type:</strong> <span id="recipe-meal"></span></p>
+      <p><strong>Dietary:</strong> <span id="recipe-dietary"></span></p>
+      <p><strong>Cooking Time:</strong> <span id="recipe-time"></span> minutes</p>
+      <p><strong>Nutritional Information:</strong></p>
+      <ul id="recipe-nutrition"></ul>
+      <p><strong>Ingredients (adjust servings):</strong></p>
+      <label for="servings-input">Servings:</label>
+      <input type="number" id="servings-input" min="1" value="1" style="width:4em" />
+      <ul id="recipe-ingredients"></ul>
+      <p><strong>Instructions:</strong></p>
+      <ol id="recipe-instructions"></ol>
 
-    <div id="recipes" class="recipe-list" aria-live="polite" aria-atomic="true"></div>
-    <div id="favorites" class="favorites-list" style="display:none;" aria-live="polite" aria-atomic="true"></div>
-  </main>
-  <footer>© Manik Roy 2025</footer>
+      <div style="margin-top:1em;">
+        <button id="save-fav-btn">Save to Favorites</button>
+        <button id="add-shopping-btn">Add to Shopping List</button>
+        <button id="share-recipe-btn">Share Recipe</button>
+      </div>
+
+      <section style="margin-top:1em;">
+        <h4>Ratings & Reviews</h4>
+        <div id="ratings-summary"></div>
+        <label for="rating-input">Your Rating:</label>
+        <select id="rating-input">
+          <option value="5">5 - Excellent</option>
+          <option value="4">4 - Good</option>
+          <option value="3">3 - Average</option>
+          <option value="2">2 - Poor</option>
+          <option value="1">1 - Terrible</option>
+        </select>
+        <br />
+        <label for="review-input">Your Review:</label>
+        <textarea id="review-input" rows="2" placeholder="Write your review here..."></textarea>
+        <br />
+        <button id="submit-review-btn">Submit Review</button>
+
+        <div id="reviews-list" style="margin-top:0.5em; max-height:150px; overflow-y:auto; border-top:1px solid var(--accent); padding-top:0.5em;"></div>
+      </section>
+
+      <section style="margin-top:1em;">
+        <h4>Ingredient Substitutions</h4>
+        <ul id="substitution-list"></ul>
+      </section>
+    </div>
+  </div>
+
+  <button id="dark-mode-toggle" title="Toggle Dark Mode">🌓</button>
 
 <script>
-  (() => {
-    // Sample recipe database
-    const recipes = [
-      {
-        id: 1,
-        name: "Tomato Rice",
-        ingredients: ["rice", "tomato", "onion", "garlic", "oil", "salt"],
-        instructions: "1. Heat oil, sauté onion and garlic.\n2. Add chopped tomato and cook till soft.\n3. Add rice and salt.\n4. Add water, cook covered till rice is done.",
-        servings: 2,
-      },
-      {
-        id: 2,
-        name: "Chicken Stir Fry",
-        ingredients: ["chicken", "soy sauce", "bell pepper", "onion", "oil", "garlic", "salt"],
-        instructions: "1. Cut chicken into strips.\n2. Heat oil, sauté garlic and onion.\n3. Add chicken, cook till browned.\n4. Add bell pepper and soy sauce.\n5. Stir fry till cooked through.",
-        servings: 3,
-      },
-      {
-        id: 3,
-        name: "Vegetable Omelette",
-        ingredients: ["eggs", "tomato", "onion", "bell pepper", "salt", "pepper", "oil"],
-        instructions: "1. Beat eggs with salt and pepper.\n2. Heat oil, sauté vegetables.\n3. Pour eggs, cook until set.\n4. Fold and serve.",
-        servings: 1,
-      },
-      {
-        id: 4,
-        name: "Pasta with Tomato Sauce",
-        ingredients: ["pasta", "tomato", "garlic", "olive oil", "salt", "basil"],
-        instructions: "1. Boil pasta.\n2. Heat olive oil, sauté garlic.\n3. Add tomato, cook into sauce.\n4. Mix pasta with sauce.\n5. Garnish with basil.",
-        servings: 2,
-      },
-      {
-        id: 5,
-        name: "Fruit Salad",
-        ingredients: ["apple", "banana", "orange", "grapes", "honey", "lemon juice"],
-        instructions: "1. Chop all fruits.\n2. Mix honey and lemon juice.\n3. Toss fruits with dressing.\n4. Chill and serve.",
-        servings: 4,
-      }
-    ];
+(() => {
+  "use strict";
 
-    // DOM elements
-    const ingredientsInput = document.getElementById('ingredientsInput');
-    const generateBtn = document.getElementById('generateBtn');
-    const recipesDiv = document.getElementById('recipes');
-    const portionControl = document.getElementById('portionControl');
-    const portionInput = document.getElementById('portionInput');
-    const favoritesDiv = document.getElementById('favorites');
-    const showFavBtn = document.getElementById('showFavBtn');
-    const darkModeToggle = document.getElementById('darkModeToggle');
-
-    // State
-    let currentRecipes = [];
-    let currentPortion = 1;
-    let showingFavorites = false;
-
-    // Utility: Normalize strings (lowercase, trim)
-    function normalize(str) {
-      return str.trim().toLowerCase();
+  // Data: Sample recipes
+  const recipes = [
+    {
+      id: 1,
+      name: "Spaghetti Aglio e Olio",
+      ingredients: [
+        { name: "spaghetti", quantity: 100, unit: "g" },
+        { name: "garlic", quantity: 4, unit: "cloves" },
+        { name: "olive oil", quantity: 2, unit: "tbsp" },
+        { name: "red chili flakes", quantity: 0.5, unit: "tsp" },
+        { name: "parsley", quantity: 2, unit: "tbsp" },
+        { name: "salt", quantity: "to taste" },
+        { name: "black pepper", quantity: "to taste" }
+      ],
+      instructions: [
+        "Cook spaghetti in salted boiling water until al dente.",
+        "Heat olive oil in a pan, add sliced garlic and chili flakes, sauté gently.",
+        "Drain pasta and toss with the garlic oil.",
+        "Mix in chopped parsley, salt, and pepper.",
+        "Serve hot."
+      ],
+      dietary: ["vegetarian"],
+      cuisine: "italian",
+      meal: "dinner",
+      cookingTime: 20,
+      nutrition: { calories: 400, protein: 10, carbs: 70, fat: 12, vitamins: "A, C" }
+    },
+    {
+      id: 2,
+      name: "Vegan Chickpea Curry",
+      ingredients: [
+        { name: "chickpeas", quantity: 1, unit: "can" },
+        { name: "onion", quantity: 1, unit: "medium" },
+        { name: "garlic", quantity: 3, unit: "cloves" },
+        { name: "coconut milk", quantity: 1, unit: "cup" },
+        { name: "curry powder", quantity: 1, unit: "tbsp" },
+        { name: "tomato", quantity: 2, unit: "medium" },
+        { name: "spinach", quantity: 2, unit: "cups" },
+        { name: "salt", quantity: "to taste" }
+      ],
+      instructions: [
+        "Sauté onion and garlic until soft.",
+        "Add chopped tomatoes and cook until mushy.",
+        "Add curry powder and stir.",
+        "Add chickpeas and coconut milk, simmer for 15 minutes.",
+        "Add spinach and cook until wilted.",
+        "Season with salt and serve with rice."
+      ],
+      dietary: ["vegan", "gluten-free"],
+      cuisine: "indian",
+      meal: "lunch",
+      cookingTime: 40,
+      nutrition: { calories: 350, protein: 15, carbs: 45, fat: 10, vitamins: "B6, C" }
+    },
+    {
+      id: 3,
+      name: "Keto Grilled Chicken Salad",
+      ingredients: [
+        { name: "chicken breast", quantity: 200, unit: "g" },
+        { name: "mixed greens", quantity: 3, unit: "cups" },
+        { name: "avocado", quantity: 1, unit: "medium" },
+        { name: "olive oil", quantity: 1, unit: "tbsp" },
+        { name: "lemon juice", quantity: 1, unit: "tbsp" },
+        { name: "salt", quantity: "to taste" },
+        { name: "black pepper", quantity: "to taste" }
+      ],
+      instructions: [
+        "Grill chicken breast until cooked through.",
+        "Slice avocado and mix with greens.",
+        "Prepare dressing with olive oil, lemon juice, salt, and pepper.",
+        "Toss salad with dressing and top with sliced chicken.",
+        "Serve immediately."
+      ],
+      dietary: ["keto", "gluten-free"],
+      cuisine: "american",
+      meal: "lunch",
+      cookingTime: 30,
+      nutrition: { calories: 450, protein: 40, carbs: 8, fat: 30, vitamins: "A, E" }
+    },
+    {
+      id: 4,
+      name: "Classic Pancakes",
+      ingredients: [
+        { name: "all-purpose flour", quantity: 1.5, unit: "cups" },
+        { name: "milk", quantity: 1.25, unit: "cups" },
+        { name: "egg", quantity: 1, unit: "large" },
+        { name: "butter", quantity: 3, unit: "tbsp" },
+        { name: "baking powder", quantity: 3.5, unit: "tsp" },
+        { name: "salt", quantity: 0.5, unit: "tsp" },
+        { name: "sugar", quantity: 1, unit: "tbsp" }
+      ],
+      instructions: [
+        "Mix dry ingredients in a bowl.",
+        "Add milk, egg, and melted butter; stir until smooth.",
+        "Heat a lightly oiled griddle over medium-high heat.",
+        "Pour batter to form pancakes, cook until bubbles appear.",
+        "Flip and cook until golden.",
+        "Serve with syrup or toppings."
+      ],
+      dietary: ["vegetarian"],
+      cuisine: "american",
+      meal: "breakfast",
+      cookingTime: 25,
+      nutrition: { calories: 520, protein: 9, carbs: 80, fat: 14, vitamins: "B12, D" }
+    },
+    {
+      id: 5,
+      name: "Gluten-Free Chocolate Cake",
+      ingredients: [
+        { name: "gluten-free flour", quantity: 1.5, unit: "cups" },
+        { name: "cocoa powder", quantity: 0.75, unit: "cups" },
+        { name: "sugar", quantity: 1.5, unit: "cups" },
+        { name: "baking powder", quantity: 1.5, unit: "tsp" },
+        { name: "eggs", quantity: 2, unit: "large" },
+        { name: "milk", quantity: 1, unit: "cup" },
+        { name: "vegetable oil", quantity: 0.5, unit: "cup" }
+      ],
+      instructions: [
+        "Preheat oven to 350°F (175°C).",
+        "Mix dry ingredients together.",
+        "Add eggs, milk, and oil; mix well.",
+        "Pour into greased pan.",
+        "Bake for 30-35 minutes or until a toothpick comes out clean.",
+        "Cool and serve."
+      ],
+      dietary: ["gluten-free", "vegetarian"],
+      cuisine: "french",
+      meal: "dessert",
+      cookingTime: 45,
+      nutrition: { calories: 600, protein: 7, carbs: 90, fat: 20, vitamins: "E" }
     }
+  ];
 
-    // Find matching recipes based on ingredients
-    function findRecipes(availableIngredients) {
-      const availableSet = new Set(availableIngredients.map(normalize));
-      // Match recipe if ALL recipe ingredients are in availableSet (relaxed: allow if at least half ingredients match)
-      return recipes.filter(recipe => {
+  // Ingredient substitutions (basic)
+  const substitutions = {
+    "butter": ["margarine", "coconut oil", "olive oil"],
+    "milk": ["almond milk", "soy milk", "water"],
+    "egg": ["flaxseed meal + water", "chia seeds + water", "applesauce"],
+    "sugar": ["honey", "maple syrup", "agave nectar"],
+    "olive oil": ["vegetable oil", "canola oil", "avocado oil"],
+    "all-purpose flour": ["gluten-free flour", "almond flour"]
+  };
+
+  // App state
+  const state = {
+    filteredRecipes: [],
+    selectedRecipe: null,
+    favorites: JSON.parse(localStorage.getItem("reciply-favorites")) || [],
+    shoppingList: JSON.parse(localStorage.getItem("reciply-shopping-list")) || [],
+    reviews: JSON.parse(localStorage.getItem("reciply-reviews")) || {} // key: recipeId
+  };
+
+  // Elements
+  const ingredientsInput = document.getElementById("ingredients");
+  const dietarySelect = document.getElementById("dietary");
+  const cuisineSelect = document.getElementById("cuisine");
+  const mealSelect = document.getElementById("meal");
+  const maxTimeInput = document.getElementById("max-time");
+  const findRecipesBtn = document.getElementById("find-recipes-btn");
+  const randomRecipeBtn = document.getElementById("random-recipe-btn");
+  const recipesList = document.getElementById("recipes-list");
+  const favoritesList = document.getElementById("favorites-list");
+  const shoppingListEl = document.getElementById("shopping-list");
+  const clearShoppingBtn = document.getElementById("clear-shopping-list-btn");
+
+  // Recipe detail modal elements
+  const recipeDetail = document.getElementById("recipe-detail");
+  const recipeTitle = document.getElementById("recipe-title");
+  const recipeCuisine = document.getElementById("recipe-cuisine");
+  const recipeMeal = document.getElementById("recipe-meal");
+  const recipeDietary = document.getElementById("recipe-dietary");
+  const recipeTime = document.getElementById("recipe-time");
+  const recipeNutrition = document.getElementById("recipe-nutrition");
+  const recipeIngredients = document.getElementById("recipe-ingredients");
+  const recipeInstructions = document.getElementById("recipe-instructions");
+  const servingsInput = document.getElementById("servings-input");
+  const saveFavBtn = document.getElementById("save-fav-btn");
+  const addShoppingBtn = document.getElementById("add-shopping-btn");
+  const shareRecipeBtn = document.getElementById("share-recipe-btn");
+  const closeBtn = recipeDetail.querySelector(".close-btn");
+
+  // Ratings and reviews
+  const ratingsSummary = document.getElementById("ratings-summary");
+  const ratingInput = document.getElementById("rating-input");
+  const reviewInput = document.getElementById("review-input");
+  const submitReviewBtn = document.getElementById("submit-review-btn");
+  const reviewsList = document.getElementById("reviews-list");
+
+  // Substitutions list
+  const substitutionList = document.getElementById("substitution-list");
+
+  // Dark mode toggle
+  const darkModeToggle = document.getElementById("dark-mode-toggle");
+
+  // Camera
+  const video = document.getElementById("camera");
+  const captureBtn = document.getElementById("capture-btn");
+  const capturedTextEl = document.getElementById("captured-text");
+  let stream = null;
+
+  // Utils
+
+  // Normalize strings (for matching)
+  const normalize = str => str.trim().toLowerCase();
+
+  // Filter recipes by ingredients and filters
+  function filterRecipes() {
+    const userIngredients = ingredientsInput.value
+      .split(",")
+      .map(i => normalize(i))
+      .filter(i => i.length > 0);
+
+    // Filters
+    const selectedDietary = Array.from(dietarySelect.selectedOptions).map(o => o.value).filter(v => v !== "none");
+    const selectedCuisine = Array.from(cuisineSelect.selectedOptions).map(o => o.value).filter(v => v !== "none");
+    const selectedMeal = Array.from(mealSelect.selectedOptions).map(o => o.value).filter(v => v !== "none");
+    const maxTime = parseInt(maxTimeInput.value) || Infinity;
+
+    // Filtering
+    let filtered = recipes.filter(recipe => {
+      // Check dietary
+      if (selectedDietary.length > 0) {
+        if (!selectedDietary.every(d => recipe.dietary.includes(d))) return false;
+      }
+      // Cuisine
+      if (selectedCuisine.length > 0 && !selectedCuisine.includes(recipe.cuisine)) return false;
+
+      // Meal
+      if (selectedMeal.length > 0 && !selectedMeal.includes(recipe.meal)) return false;
+
+      // Time
+      if (recipe.cookingTime > maxTime) return false;
+
+      // Ingredients match: at least one ingredient from user's input
+      if (userIngredients.length > 0) {
+        // If all recipe ingredients are in user's ingredients? No, that'd be strict
+        // Let's check if user has at least half of the recipe ingredients (or configurable)
         let matchedCount = 0;
         for (const ing of recipe.ingredients) {
-          if (availableSet.has(normalize(ing))) matchedCount++;
+          const name = normalize(ing.name);
+          if (userIngredients.includes(name)) matchedCount++;
         }
-        // Require at least half ingredients to be available
-        return matchedCount >= Math.ceil(recipe.ingredients.length / 2);
-      });
-    }
-
-    // Render recipes list
-    function renderRecipes(recipesToShow) {
-      favoritesDiv.style.display = 'none';
-      recipesDiv.style.display = 'block';
-      portionControl.style.display = recipesToShow.length ? 'block' : 'none';
-
-      if (!recipesToShow.length) {
-        recipesDiv.innerHTML = '<p>No recipes match your ingredients.</p>';
-        return;
+        if (matchedCount === 0) return false; // no matches
       }
 
-      let html = '';
-      recipesToShow.forEach(recipe => {
-        const servings = currentPortion;
-        const scale = servings / recipe.servings;
+      return true;
+    });
 
-        // Scale ingredients
-        const scaledIngredients = recipe.ingredients.map(ing => {
-          // Since no quantities in sample data, just display ingredient name
-          return ing;
+    return filtered;
+  }
+
+  // Render recipe cards list
+  function renderRecipesList(recipes) {
+    if (recipes.length === 0) {
+      recipesList.innerHTML = "<p>No recipes found. Try changing filters or adding more ingredients.</p>";
+      return;
+    }
+
+    recipesList.innerHTML = recipes.map(recipe => `
+      <div class="recipe-card" data-id="${recipe.id}" tabindex="0" role="button" aria-pressed="false" aria-label="View recipe: ${recipe.name}">
+        <h3>${recipe.name}</h3>
+        <p><strong>Cuisine:</strong> ${capitalize(recipe.cuisine)} | <strong>Meal:</strong> ${capitalize(recipe.meal)}</p>
+        <p><strong>Cooking Time:</strong> ${recipe.cookingTime} minutes</p>
+      </div>
+    `).join("");
+  }
+
+  // Capitalize string
+  function capitalize(str) {
+    if (!str) return "";
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  // Show recipe detail modal
+  function showRecipeDetail(id) {
+    const recipe = recipes.find(r => r.id === id);
+    if (!recipe) return;
+
+    state.selectedRecipe = recipe;
+    servingsInput.value = 1;
+
+    recipeTitle.textContent = recipe.name;
+    recipeCuisine.textContent = capitalize(recipe.cuisine);
+    recipeMeal.textContent = capitalize(recipe.meal);
+    recipeDietary.textContent = recipe.dietary.length > 0 ? recipe.dietary.map(capitalize).join(", ") : "None";
+    recipeTime.textContent = recipe.cookingTime;
+
+    // Nutrition list
+    recipeNutrition.innerHTML = Object.entries(recipe.nutrition)
+      .map(([key, val]) => `<li><strong>${capitalize(key)}:</strong> ${val}</li>`).join("");
+
+    renderIngredients(recipe.ingredients, 1);
+    renderInstructions(recipe.instructions);
+
+    renderSubstitutions(recipe.ingredients);
+
+    updateRatingsSection(recipe.id);
+
+    recipeDetail.classList.add("active");
+  }
+
+  // Render ingredients list with scaling
+  function renderIngredients(ingredients, scale) {
+    recipeIngredients.innerHTML = ingredients.map(ing => {
+      let qty = ing.quantity;
+      if (typeof qty === "number") {
+        qty = (qty * scale).toFixed(2);
+        if (qty.endsWith(".00")) qty = qty.slice(0, -3);
+      }
+      return `<li>${qty} ${ing.unit || ""} ${ing.name}</li>`;
+    }).join("");
+  }
+
+  // Render instructions list
+  function renderInstructions(instructions) {
+    recipeInstructions.innerHTML = instructions.map(step => `<li>${step}</li>`).join("");
+  }
+
+  // Save favorite recipe
+  function saveFavorite(recipe) {
+    if (!state.favorites.find(r => r.id === recipe.id)) {
+      state.favorites.push(recipe);
+      localStorage.setItem("reciply-favorites", JSON.stringify(state.favorites));
+      renderFavorites();
+      alert(`Saved "${recipe.name}" to favorites!`);
+    } else {
+      alert(`"${recipe.name}" is already in your favorites.`);
+    }
+  }
+
+  // Render favorites list
+  function renderFavorites() {
+    if (state.favorites.length === 0) {
+      favoritesList.innerHTML = "<p>No favorite recipes yet.</p>";
+      return;
+    }
+    favoritesList.innerHTML = state.favorites.map(recipe => `
+      <div class="recipe-card" data-id="${recipe.id}" tabindex="0" role="button" aria-pressed="false" aria-label="View favorite recipe: ${recipe.name}">
+        <h4>${recipe.name}</h4>
+      </div>
+    `).join("");
+  }
+
+  // Add to shopping list
+  function addToShoppingList(recipe, scale = 1) {
+    recipe.ingredients.forEach(ing => {
+      let existing = state.shoppingList.find(item => normalize(item.name) === normalize(ing.name));
+      let qty = ing.quantity;
+      if (typeof qty === "number") qty = qty * scale;
+      else qty = null;
+
+      if (existing) {
+        if (qty) {
+          if (typeof existing.quantity === "number") existing.quantity += qty;
+          else existing.quantity = qty;
+        }
+      } else {
+        state.shoppingList.push({
+          name: ing.name,
+          quantity: qty,
+          unit: ing.unit || ""
         });
-
-        // Check if favorite
-        const favs = getFavorites();
-        const isFav = favs.some(f => f.id === recipe.id);
-
-        html += `
-          <div class="recipe-item" tabindex="0" aria-label="Recipe: ${recipe.name}">
-            <h3>${recipe.name}</h3>
-            <strong>Ingredients:</strong>
-            <ul class="ingredients-list">${scaledIngredients.map(ing => `<li>${ing}</li>`).join('')}</ul>
-            <strong>Instructions:</strong>
-            <p class="instructions">${recipe.instructions}</p>
-            <p><em>Servings: ${servings}</em></p>
-            <button aria-pressed="${isFav}" class="fav-btn" data-id="${recipe.id}" aria-label="${isFav ? 'Remove from favorites' : 'Add to favorites'}">
-              ${isFav ? '★ Remove Favorite' : '☆ Add to Favorites'}
-            </button>
-          </div>
-        `;
-      });
-
-      recipesDiv.innerHTML = html;
-
-      // Attach event handlers to favorite buttons
-      document.querySelectorAll('.fav-btn').forEach(btn => {
-        btn.onclick = () => {
-          const id = Number(btn.getAttribute('data-id'));
-          toggleFavorite(id);
-          renderRecipes(currentRecipes); // Re-render to update favorite buttons
-        };
-      });
-    }
-
-    // Render favorites list
-    function renderFavorites() {
-      recipesDiv.style.display = 'none';
-      portionControl.style.display = 'none';
-      favoritesDiv.style.display = 'block';
-
-      const favs = getFavorites();
-
-      if (!favs.length) {
-        favoritesDiv.innerHTML = '<p>You have no favorite recipes saved.</p>';
-        return;
-      }
-
-      let html = '<h2>Your Favorites</h2>';
-      favs.forEach(recipe => {
-        html += `
-          <div class="recipe-item" tabindex="0" aria-label="Favorite Recipe: ${recipe.name}">
-            <h3>${recipe.name}</h3>
-            <strong>Ingredients:</strong>
-            <ul class="ingredients-list">${recipe.ingredients.map(ing => `<li>${ing}</li>`).join('')}</ul>
-            <strong>Instructions:</strong>
-            <p class="instructions">${recipe.instructions}</p>
-            <p><em>Servings: ${recipe.servings}</em></p>
-            <button aria-pressed="true" class="fav-btn" data-id="${recipe.id}" aria-label="Remove from favorites">
-              ★ Remove Favorite
-            </button>
-          </div>
-        `;
-      });
-
-      favoritesDiv.innerHTML = html;
-
-      // Attach event handlers to remove favorite buttons
-      document.querySelectorAll('.fav-btn').forEach(btn => {
-        btn.onclick = () => {
-          const id = Number(btn.getAttribute('data-id'));
-          toggleFavorite(id);
-          renderFavorites(); // Re-render favorites
-        };
-      });
-    }
-
-    // Local Storage favorites management
-    function getFavorites() {
-      try {
-        const favs = localStorage.getItem('recipeFavorites');
-        if (favs) return JSON.parse(favs);
-      } catch {
-        return [];
-      }
-      return [];
-    }
-    function saveFavorites(favs) {
-      localStorage.setItem('recipeFavorites', JSON.stringify(favs));
-    }
-    function toggleFavorite(id) {
-      const favs = getFavorites();
-      const index = favs.findIndex(r => r.id === id);
-      if (index > -1) {
-        favs.splice(index, 1);
-      } else {
-        const recipe = recipes.find(r => r.id === id);
-        if (recipe) favs.push(recipe);
-      }
-      saveFavorites(favs);
-    }
-
-    // Event handlers
-    generateBtn.addEventListener('click', () => {
-      const input = ingredientsInput.value;
-      if (!input.trim()) {
-        alert('Please enter some ingredients first.');
-        return;
-      }
-      const inputIngredients = input.split(',').map(i => i.trim()).filter(Boolean);
-      currentRecipes = findRecipes(inputIngredients);
-      currentPortion = 1;
-      portionInput.value = 1;
-      showingFavorites = false;
-      renderRecipes(currentRecipes);
-    });
-
-    portionInput.addEventListener('input', () => {
-      let val = Number(portionInput.value);
-      if (isNaN(val) || val < 1) {
-        val = 1;
-        portionInput.value = 1;
-      }
-      currentPortion = val;
-      if (!showingFavorites) renderRecipes(currentRecipes);
-    });
-
-    showFavBtn.addEventListener('click', () => {
-      showingFavorites = !showingFavorites;
-      if (showingFavorites) {
-        showFavBtn.textContent = 'Show Recipes';
-        renderFavorites();
-      } else {
-        showFavBtn.textContent = 'Show Favorites';
-        renderRecipes(currentRecipes);
       }
     });
+    localStorage.setItem("reciply-shopping-list", JSON.stringify(state.shoppingList));
+    renderShoppingList();
+    alert("Added ingredients to shopping list.");
+  }
 
-    // Dark mode toggle & persistence
-    function loadDarkMode() {
-      const saved = localStorage.getItem('darkModeEnabled');
-      if (saved === 'true') {
-        document.body.classList.add('dark');
-        darkModeToggle.checked = true;
-      } else {
-        document.body.classList.remove('dark');
-        darkModeToggle.checked = false;
-      }
+  // Render shopping list
+  function renderShoppingList() {
+    if (state.shoppingList.length === 0) {
+      shoppingListEl.innerHTML = "<li>No items in your shopping list.</li>";
+      return;
     }
-    darkModeToggle.addEventListener('change', () => {
-      if (darkModeToggle.checked) {
-        document.body.classList.add('dark');
-        localStorage.setItem('darkModeEnabled', 'true');
-      } else {
-        document.body.classList.remove('dark');
-        localStorage.setItem('darkModeEnabled', 'false');
+    shoppingListEl.innerHTML = state.shoppingList.map(item => {
+      let qty = item.quantity !== null && item.quantity !== undefined ? item.quantity : "";
+      if (typeof qty === "number") {
+        qty = qty.toFixed(2);
+        if (qty.endsWith(".00")) qty = qty.slice(0, -3);
       }
+      return `<li>${qty} ${item.unit} ${item.name}</li>`;
+    }).join("");
+  }
+
+  // Clear shopping list
+  clearShoppingBtn.addEventListener("click", () => {
+    if (confirm("Clear your entire shopping list?")) {
+      state.shoppingList = [];
+      localStorage.setItem("reciply-shopping-list", JSON.stringify(state.shoppingList));
+      renderShoppingList();
+    }
+  });
+
+  // Share recipe text
+  function shareRecipe(recipe) {
+    let text = `Recipe: ${recipe.name}\nCuisine: ${capitalize(recipe.cuisine)}\nMeal: ${capitalize(recipe.meal)}\n\nIngredients:\n`;
+    recipe.ingredients.forEach(ing => {
+      text += `- ${ing.quantity} ${ing.unit || ""} ${ing.name}\n`;
+    });
+    text += `\nInstructions:\n`;
+    recipe.instructions.forEach((step, i) => {
+      text += `${i + 1}. ${step}\n`;
     });
 
-    // Initialize
-    loadDarkMode();
+    if (navigator.share) {
+      navigator.share({
+        title: recipe.name,
+        text: text
+      }).catch(console.error);
+    } else {
+      // Fallback: copy to clipboard
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Recipe text copied to clipboard! Share it anywhere.");
+      });
+    }
+  }
 
-  })();
+  // Capitalize first letter utility
+  // Already defined above as capitalize()
+
+  // Handle recipe card click
+  recipesList.addEventListener("click", e => {
+    const card = e.target.closest(".recipe-card");
+    if (card) {
+      const id = parseInt(card.dataset.id);
+      showRecipeDetail(id);
+    }
+  });
+  favoritesList.addEventListener("click", e => {
+    const card = e.target.closest(".recipe-card");
+    if (card) {
+      const id = parseInt(card.dataset.id);
+      showRecipeDetail(id);
+    }
+  });
+
+  // Close modal
+  closeBtn.addEventListener("click", () => {
+    recipeDetail.classList.remove("active");
+  });
+
+  // Adjust servings
+  servingsInput.addEventListener("input", e => {
+    let scale = parseInt(e.target.value);
+    if (isNaN(scale) || scale < 1) {
+      scale = 1;
+      e.target.value = 1;
+    }
+    renderIngredients(state.selectedRecipe.ingredients, scale);
+  });
+
+  // Save favorite button
+  saveFavBtn.addEventListener("click", () => {
+    if (state.selectedRecipe) saveFavorite(state.selectedRecipe);
+  });
+
+  // Add to shopping list button
+  addShoppingBtn.addEventListener("click", () => {
+    if (state.selectedRecipe) {
+      let scale = parseInt(servingsInput.value) || 1;
+      addToShoppingList(state.selectedRecipe, scale);
+    }
+  });
+
+  // Share recipe button
+  shareRecipeBtn.addEventListener("click", () => {
+    if (state.selectedRecipe) shareRecipe(state.selectedRecipe);
+  });
+
+  // Find recipes button
+  findRecipesBtn.addEventListener("click", () => {
+    const filtered = filterRecipes();
+    state.filteredRecipes = filtered;
+    renderRecipesList(filtered);
+  });
+
+  // Random recipe button
+  randomRecipeBtn.addEventListener("click", () => {
+    const randomIndex = Math.floor(Math.random() * recipes.length);
+    showRecipeDetail(recipes[randomIndex].id);
+  });
+
+  // Ratings & reviews
+  submitReviewBtn.addEventListener("click", () => {
+    if (!state.selectedRecipe) return;
+    const id = state.selectedRecipe.id;
+    const rating = parseInt(ratingInput.value);
+    const reviewText = reviewInput.value.trim();
+    if (!rating || !reviewText) {
+      alert("Please provide both a rating and a review.");
+      return;
+    }
+    if (!state.reviews[id]) state.reviews[id] = [];
+    state.reviews[id].push({ rating, text: reviewText, date: new Date().toISOString() });
+    localStorage.setItem("reciply-reviews", JSON.stringify(state.reviews));
+    reviewInput.value = "";
+    ratingInput.value = "5";
+    updateRatingsSection(id);
+  });
+
+  // Update ratings summary and reviews list
+  function updateRatingsSection(recipeId) {
+    const revs = state.reviews[recipeId] || [];
+    if (revs.length === 0) {
+      ratingsSummary.textContent = "No ratings yet.";
+      reviewsList.innerHTML = "<p>No reviews yet.</p>";
+      return;
+    }
+
+    const avgRating = (revs.reduce((acc, r) => acc + r.rating, 0) / revs.length).toFixed(2);
+    ratingsSummary.textContent = `Average Rating: ${avgRating} / 5 (${revs.length} review${revs.length > 1 ? "s" : ""})`;
+
+    reviewsList.innerHTML = revs.map(r => `
+      <div style="border-bottom:1px solid var(--accent); padding-bottom:0.4em; margin-bottom:0.4em;">
+        <strong>Rating:</strong> ${r.rating} / 5<br />
+        <em>${new Date(r.date).toLocaleDateString()}</em>
+        <p>${r.text}</p>
+      </div>
+    `).join("");
+  }
+
+  // Render substitutions list for ingredients missing from user input
+  function renderSubstitutions(ingredients) {
+    const userIngredients = ingredientsInput.value
+      .split(",")
+      .map(i => normalize(i))
+      .filter(i => i.length > 0);
+    substitutionList.innerHTML = "";
+
+    const subs = [];
+
+    for (const ing of ingredients) {
+      const name = normalize(ing.name);
+      if (userIngredients.length > 0 && !userIngredients.includes(name)) {
+        if (substitutions[name]) {
+          subs.push(`<li><strong>${ing.name}:</strong> Try substitutes like ${substitutions[name].join(", ")}</li>`);
+        }
+      }
+    }
+
+    substitutionList.innerHTML = subs.length > 0 ? subs.join("") : "<li>No substitutions needed based on your ingredients.</li>";
+  }
+
+  // Camera feature (note: no OCR without API; simulate capture)
+  async function startCamera() {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+      video.srcObject = stream;
+    } catch (e) {
+      capturedTextEl.textContent = "Camera access denied or not available.";
+      captureBtn.disabled = true;
+    }
+  }
+
+  // Capture button (simulate ingredient detection from camera)
+  captureBtn.addEventListener("click", () => {
+    // Since no OCR, simulate by prompting user to type or paste
+    const manualText = prompt("Simulate ingredient input:\nType or paste your ingredients detected from camera:");
+
+    if (manualText) {
+      // Append to existing ingredients
+      let current = ingredientsInput.value.trim();
+      if (current.length > 0 && !current.endsWith(",")) current += ",";
+      ingredientsInput.value = current + " " + manualText;
+      capturedTextEl.textContent = "Ingredients captured and added!";
+    } else {
+      capturedTextEl.textContent = "No ingredients captured.";
+    }
+  });
+
+  // Dark mode toggle
+  function applyDarkMode(mode) {
+    if (mode === "dark") {
+      document.body.classList.add("dark");
+      document.body.classList.remove("light");
+      localStorage.setItem("reciply-dark-mode", "dark");
+    } else {
+      document.body.classList.add("light");
+      document.body.classList.remove("dark");
+      localStorage.setItem("reciply-dark-mode", "light");
+    }
+  }
+
+  darkModeToggle.addEventListener("click", () => {
+    if (document.body.classList.contains("dark")) {
+      applyDarkMode("light");
+    } else {
+      applyDarkMode("dark");
+    }
+  });
+
+  // Initialize dark mode based on preference or system
+  function initDarkMode() {
+    const saved = localStorage.getItem("reciply-dark-mode");
+    if (saved) {
+      applyDarkMode(saved);
+    } else {
+      // Auto based on system
+      const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+      applyDarkMode(prefersDark ? "dark" : "light");
+    }
+  }
+
+  // Initialization
+  function init() {
+    initDarkMode();
+    renderFavorites();
+    renderShoppingList();
+    startCamera();
+  }
+
+  // Keyboard accessibility: allow Enter key on recipe cards
+  document.addEventListener("keydown", e => {
+    if (e.target.classList.contains("recipe-card") && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      const id = parseInt(e.target.dataset.id);
+      showRecipeDetail(id);
+    }
+  });
+
+  init();
+})();
 </script>
 </body>
 </html>
