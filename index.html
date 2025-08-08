@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Advanced Recipe Generator</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        background: #f5f5f5;
+        color: #333;
+    }
+    header {
+        background: #4CAF50;
+        color: white;
+        padding: 1rem;
+        text-align: center;
+    }
+    main {
+        padding: 1rem;
+        max-width: 900px;
+        margin: auto;
+    }
+    section {
+        background: white;
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    input, button, textarea {
+        padding: 0.5rem;
+        margin: 0.25rem 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    button {
+        background: #4CAF50;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+    button:hover {
+        background: #45a049;
+    }
+    ul {
+        list-style: none;
+        padding: 0;
+    }
+    li {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+        border-bottom: 1px solid #ddd;
+    }
+    li.checked {
+        text-decoration: line-through;
+        color: gray;
+    }
+    .timer {
+        margin-top: 0.5rem;
+        display: flex;
+        gap: 0.5rem;
+    }
+    @media (max-width: 600px) {
+        h2 { font-size: 1.2rem; }
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <h1>Advanced Recipe Generator</h1>
+</header>
+
+<main>
+    <section>
+        <h2>Generate a Recipe</h2>
+        <label>Enter Ingredients (comma separated):</label>
+        <input type="text" id="ingredientInput" placeholder="e.g. chicken, rice, tomato">
+        <button onclick="generateRecipe()">Generate Recipe</button>
+    </section>
+
+    <section id="recipeSection" style="display:none;">
+        <h2>Recipe</h2>
+        <p id="recipeTitle"></p>
+        <h3>Ingredients:</h3>
+        <ul id="ingredientList"></ul>
+
+        <h3>Steps:</h3>
+        <ol id="stepsList"></ol>
+
+        <h3>Nutrition Estimates (approx):</h3>
+        <p id="nutritionInfo"></p>
+    </section>
+
+    <section id="shoppingListSection" style="display:none;">
+        <h2>Shopping List</h2>
+        <ul id="shoppingList"></ul>
+    </section>
+</main>
+
+<script>
+const nutritionDB = {
+    chicken: {cal:165, protein:31, carbs:0, fat:3.6},
+    rice: {cal:130, protein:2.7, carbs:28, fat:0.3},
+    tomato: {cal:18, protein:0.9, carbs:3.9, fat:0.2},
+    potato: {cal:77, protein:2, carbs:17, fat:0.1},
+    egg: {cal:68, protein:6, carbs:0.6, fat:5},
+    milk: {cal:42, protein:3.4, carbs:5, fat:1}
+};
+
+function generateRecipe() {
+    const input = document.getElementById("ingredientInput").value.trim();
+    if (!input) return alert("Please enter ingredients.");
+    const ingredients = input.split(",").map(i=>i.trim().toLowerCase());
+
+    document.getElementById("recipeSection").style.display = "block";
+    document.getElementById("shoppingListSection").style.display = "block";
+
+    document.getElementById("recipeTitle").textContent = "Delicious Dish with " + ingredients.join(", ");
+
+    // Ingredient list
+    const ingList = document.getElementById("ingredientList");
+    ingList.innerHTML = "";
+    ingredients.forEach(ing=>{
+        const li = document.createElement("li");
+        li.textContent = ing;
+        ingList.appendChild(li);
+    });
+
+    // Steps with timers
+    const steps = [
+        "Prepare all ingredients",
+        "Cook main ingredient",
+        "Add spices and mix",
+        "Serve hot"
+    ];
+    const stepsList = document.getElementById("stepsList");
+    stepsList.innerHTML = "";
+    steps.forEach((step, idx)=>{
+        const li = document.createElement("li");
+        li.innerHTML = `
+            ${step}
+            <div class="timer">
+                <span id="timer${idx}">00:00</span>
+                <button onclick="startTimer(${idx})">Start</button>
+                <button onclick="pauseTimer(${idx})">Pause</button>
+                <button onclick="resetTimer(${idx})">Reset</button>
+            </div>
+        `;
+        stepsList.appendChild(li);
+    });
+
+    // Shopping list
+    const shopList = document.getElementById("shoppingList");
+    shopList.innerHTML = "";
+    ingredients.forEach(ing=>{
+        const li = document.createElement("li");
+        li.textContent = ing;
+        li.onclick = ()=> li.classList.toggle("checked");
+        shopList.appendChild(li);
+    });
+
+    // Nutrition calculation
+    let total = {cal:0, protein:0, carbs:0, fat:0};
+    ingredients.forEach(ing=>{
+        if (nutritionDB[ing]) {
+            total.cal += nutritionDB[ing].cal;
+            total.protein += nutritionDB[ing].protein;
+            total.carbs += nutritionDB[ing].carbs;
+            total.fat += nutritionDB[ing].fat;
+        }
+    });
+    document.getElementById("nutritionInfo").textContent =
+        `${total.cal} kcal | Protein: ${total.protein}g | Carbs: ${total.carbs}g | Fat: ${total.fat}g`;
+}
+
+// Timer logic
+let timers = {};
+function startTimer(id) {
+    if (!timers[id]) timers[id] = {seconds:0, running:false, interval:null};
+    if (timers[id].running) return;
+    timers[id].running = true;
+    timers[id].interval = setInterval(()=>{
+        timers[id].seconds++;
+        updateTimerDisplay(id);
+    },1000);
+}
+function pauseTimer(id) {
+    if (timers[id]) {
+        timers[id].running = false;
+        clearInterval(timers[id].interval);
+    }
+}
+function resetTimer(id) {
+    if (timers[id]) {
+        pauseTimer(id);
+        timers[id].seconds = 0;
+        updateTimerDisplay(id);
+    }
+}
+function updateTimerDisplay(id) {
+    const sec = timers[id].seconds;
+    const m = String(Math.floor(sec/60)).padStart(2,'0');
+    const s = String(sec%60).padStart(2,'0');
+    document.getElementById("timer"+id).textContent = `${m}:${s}`;
+}
+</script>
+</body>
+</html>
